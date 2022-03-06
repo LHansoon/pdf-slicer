@@ -13,12 +13,10 @@ def get_random_pdf_name():
     uuid = shortuuid.uuid()
     ts = time.time()
     time_stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-    app.logger.info("something from here yoyoyoyoyoyo")
     return f"{time_stamp}-{uuid}.pdf"
 
 
 def prepare_files(file_list, dest_dir, boto_session):
-    global logger
 
 
     pass
