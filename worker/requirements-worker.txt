@@ -1,3 +1,4 @@
 Flask==2.0.2
 PyPDF2==1.26.0
 shortuuid==1.0.8
+boto3==1.21.16
