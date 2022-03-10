@@ -40,7 +40,7 @@ def prepare_files(mission_id, file_list, dest_dir, boto_session):
         s3_bucket.download_file(s3_file_dir, local_file_dir)
 
 
-def job_prepare(job_params, boto_session):
+def parse_new_job_json(job_params, boto_session):
     pass
 
 

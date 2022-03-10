@@ -27,7 +27,7 @@ def start_mission():
                             aws_session_token=os.environ['aws_session_token'])
     json_request = request.json
 
-    mission_params, split_job_params, merge_job_params = worker.job_prepare(json_request, session)
+    mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request, session)
     worker.prepare_files(mission_params["mission_id"], mission_params["file_list"], file_dir, session)
 
     mission = worker.Mission(mission_id=mission_params["mission_id"],
