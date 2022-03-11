@@ -1,5 +1,6 @@
 import os
-from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter
+
+from pikepdf import Pdf as PDF
 from flask import current_app as app
 import json
 import shortuuid
@@ -77,16 +78,18 @@ class Mission(object):
                         f"\t==>source_dir: {source_file_dir}\n"
                         f"\t==>result file name: {result_file_name}\n"
                         f"\t==>page from: {pg_from}\t page to: {pg_to}")
+
+        dest_file_dir = os.path.join(result_file_dir, result_file_name)
         pg_from -= 1
         pg_to -= 1
-        with open(source_file_dir, 'rb') as source_pdf:
-            reader = PdfFileReader(source_pdf)
-            writer = PdfFileWriter()
-            for pg_num in range(pg_from, pg_to + 1):
-                writer.addPage(reader.getPage(pg_num))
-            out_file = os.path.join(result_file_dir, result_file_name)
-            with open(out_file, 'wb') as out_pdf:
-                writer.write(out_pdf)
+
+        source_pdf = PDF.open(source_file_dir)
+        dest_pdf = PDF.new()
+        for pg_num in range(pg_from, pg_to + 1):
+            page = source_pdf.pages[pg_num]
+            dest_pdf.pages.append(page)
+        dest_pdf.save(dest_file_dir)
+
 
     def process_split(self):
         # prepare mission split dir
@@ -103,4 +106,6 @@ class Mission(object):
                 self.__split_file(source_file_dir, splitted_file_name, target_dir, page_from, page_to)
 
     def process_merge(self):
+        target_dir = os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id)
+        mkdir_if_not_exist(target_dir)
         pass

@@ -23,26 +23,24 @@
     "merge-params": {
         "merge-segments": [
             {
-                "merge-order": {
-                    "1": {
-                        "file-name": "file-1.txt",
-                        "inner-merge-order": {
-                            "1": {"from": 1, "to": 3},
-                            "2": {"from": 3, "to": 6}
-                        }
-                    },
-                    "2": {
-                        "file-name": "file-2.txt",
-                        "inner-merge-order": {
-                            "1": {"from": 1, "to": 3},
-                            "2": {"from": 5, "to": 90},
-                            "3": {"from": 200, "to": 201}
-                        }
-                    },
-                    "3": {
-                        "file-name": "file-1.txt",
-                        "inner-merge-order": { }
+                "1": {
+                    "file-name": "file-1.txt",
+                    "inner-merge-order": {
+                        "1": {"from": 1, "to": 3},
+                        "2": {"from": 3, "to": 6}
                     }
+                },
+                "2": {
+                    "file-name": "file-2.txt",
+                    "inner-merge-order": {
+                        "1": {"from": 1, "to": 3},
+                        "2": {"from": 5, "to": 90},
+                        "3": {"from": 200, "to": 201}
+                    }
+                },
+                "3": {
+                    "file-name": "file-1.txt",
+                    "inner-merge-order": { }
                 }
             }
         ]
