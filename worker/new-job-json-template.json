@@ -11,38 +11,34 @@
     },
     "split-params": {
         "file-1.txt": [
-            {"part-id": 1, "from": 1, "to": 3},
-            {"part-id": 2, "from": 5, "to": 20}
+            {"part-id": 0, "from": 1, "to": 3},
+            {"part-id": 1, "from": 5, "to": 20}
         ],
         "file-2.txt": [
-            {"part-id": 1, "from": 3, "to": 50},
-            {"part-id": 2, "from": 2, "to": 10},
-            {"part-id": 3, "from": 5, "to": 7}
+            {"part-id": 0, "from": 3, "to": 50},
+            {"part-id": 1, "from": 2, "to": 10},
+            {"part-id": 2, "from": 5, "to": 7}
         ]
     },
     "merge-params": {
-        "merge-segments": [
-            {
-                "1": {
-                    "file-name": "file-1.txt",
-                    "inner-merge-order": {
-                        "1": {"from": 1, "to": 3},
-                        "2": {"from": 3, "to": 6}
-                    }
-                },
-                "2": {
-                    "file-name": "file-2.txt",
-                    "inner-merge-order": {
-                        "1": {"from": 1, "to": 3},
-                        "2": {"from": 5, "to": 90},
-                        "3": {"from": 200, "to": 201}
-                    }
-                },
-                "3": {
-                    "file-name": "file-1.txt",
-                    "inner-merge-order": { }
-                }
+        "0": {
+            "file-name": "file-1.txt",
+            "inner-merge-order": {
+                "0": {"from": 1, "to": 3},
+                "1": {"from": 3, "to": 6}
             }
-        ]
+        },
+        "1": {
+            "file-name": "file-2.txt",
+            "inner-merge-order": {
+                "0": {"from": 1, "to": 3},
+                "1": {"from": 5, "to": 90},
+                "2": {"from": 200, "to": 201}
+            }
+        },
+        "2": {
+            "file-name": "file-1.txt",
+            "inner-merge-order": { }
+        }
     }
 }

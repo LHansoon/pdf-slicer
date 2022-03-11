@@ -72,7 +72,6 @@ class Mission(object):
         split_files = self.process_split()
         merge_files = self.process_merge()
 
-
     def __split_file(self, source_file_dir: str, result_file_name, result_file_dir, pg_from, pg_to):
         app.logger.info(f"New Split Mission\n"
                         f"\t==>source_dir: {source_file_dir}\n"
@@ -89,7 +88,6 @@ class Mission(object):
             page = source_pdf.pages[pg_num]
             dest_pdf.pages.append(page)
         dest_pdf.save(dest_file_dir)
-
 
     def process_split(self):
         # prepare mission split dir
@@ -108,4 +106,32 @@ class Mission(object):
     def process_merge(self):
         target_dir = os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id)
         mkdir_if_not_exist(target_dir)
-        pass
+
+        keys = self.merge_params.keys()
+        max_key = int(max(keys))
+
+        dest_pdf = PDF.new()
+        for number in range(max_key + 1):
+            slice_params = self.merge_params[f"{number}"]
+            file_name = slice_params["file-name"]
+            source_file_dir = os.path.join(self.source_file_dir, file_name)
+            source_pdf = PDF.open(source_file_dir)
+
+            segments = []
+            for segment_key in slice_params["inner-merge-order"].keys():
+                segment_pages = []
+                segment_params = slice_params["inner-merge-order"][segment_key]
+                pg_from = segment_params["from"]
+                pg_to = segment_params["to"]
+                for pg_num in range(pg_from, pg_to + 1):
+                    page = source_pdf.pages[pg_num - 1]
+                    segment_pages.append(page)
+                segments.insert(int(segment_key), segment_pages)
+
+            for segment in segments:
+                for page in segment:
+                    dest_pdf.pages.append(page)
+
+        file_name = f"merged-{self.mission_id}.pdf"
+        target_file_dir = os.path.join(target_dir, file_name)
+        dest_pdf.save(target_file_dir)
