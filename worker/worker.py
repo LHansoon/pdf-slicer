@@ -54,10 +54,6 @@ def prepare_files(mission_id, file_list, dest_dir, boto_session):
             s3_bucket.download_file(s3_file_dir, local_file_dir)
 
 
-def cleanup(files):
-    pass
-
-
 class Mission(object):
     def __init__(self, mission_id, split_params, merge_params, boto_session, source_file_dir, dump_file_dir):
         self.mission_id: str = mission_id
@@ -144,3 +140,15 @@ class Mission(object):
         file_name = f"merged-{self.mission_id}.pdf"
         target_file_dir = os.path.join(target_dir, file_name)
         dest_pdf.save(target_file_dir)
+
+    def clean_up(self):
+        dir_list = [os.path.join(self.dump_file_dir, file_config["dest_split"], self.mission_id),
+                    os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id),
+                    os.path.join(self.source_file_dir, self.mission_id)]
+
+        for dir in dir_list:
+            for root, dirs, files in os.walk(dir):
+                for file in files:
+                    path = os.path.join(dir, file)
+                    os.remove(path)
+            os.rmdir(dir)

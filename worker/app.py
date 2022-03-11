@@ -20,6 +20,7 @@ def before_first_request():
     app.logger.info(f"===          tmp download file dir is -> {file_dir}")
     app.logger.info(f"===          tmp finished file dir is -> {finished_dir}")
 
+
 def execute_mission(json_request):
     session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                             aws_secret_access_key=os.environ['aws_secret_access_key'],
@@ -37,6 +38,8 @@ def execute_mission(json_request):
 
     mission.process_job()
     mission.upload_files()
+    mission.clean_up()
+
 
 @app.route("/process-mission", methods=["POST"])
 @decorators.router_wrapper
