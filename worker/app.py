@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request
 import decorators
 import worker
@@ -8,8 +10,8 @@ app = Flask(__name__)
 
 logger = app.logger
 
-file_dir = "./download_files"
-finished_dir = "./finished_files"
+file_dir = "../download_files"
+finished_dir = "../finished_files"
 
 
 @app.before_first_request
@@ -27,20 +29,21 @@ def start_mission():
                             aws_session_token=os.environ['aws_session_token'])
     json_request = request.json
 
-    mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request, session)
-    worker.prepare_files(mission_params["mission_id"], mission_params["file_list"], file_dir, session)
+    json_request = json.dumps(json_request)
 
-    mission = worker.Mission(mission_id=mission_params["mission_id"],
+    mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request)
+    mission_id = mission_params["mission-id"]
+    worker.prepare_files(mission_id, mission_params["mission-file-list"], file_dir, session)
+
+    mission = worker.Mission(mission_id=mission_id,
                              split_params=split_job_params,
                              merge_params=merge_job_params,
                              boto_session=session,
-                             source_file_dir=file_dir,
+                             source_file_dir=os.path.join(file_dir, mission_id),
                              dump_file_dir=finished_dir)
 
-    merge_files = mission.process_merge()
-    split_files = mission.process_split()
+    mission.process_job()
 
-    files = merge_files + split_files
     return "", 200
 
 

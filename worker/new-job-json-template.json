@@ -21,8 +21,8 @@
         ]
     },
     "merge-params": {
-        "merge-segments": {
-            "0": {
+        "merge-segments": [
+            {
                 "merge-order": {
                     "1": {
                         "file-name": "file-1.txt",
@@ -45,6 +45,6 @@
                     }
                 }
             }
-        }
+        ]
     }
 }
