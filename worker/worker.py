@@ -13,7 +13,7 @@ import decorators
 file_config = {
     "bucket": "pdf-slicer",
     "s3_source": "source",
-    "dest": "ready",
+    "s3_dest": "ready",
     "dest_split": "split",
     "dest_merge": "merge"
 }
@@ -60,13 +60,22 @@ def cleanup(files):
 
 class Mission(object):
     def __init__(self, mission_id, split_params, merge_params, boto_session, source_file_dir, dump_file_dir):
-        self.mission_id = mission_id
+        self.mission_id: str = mission_id
         self.split_params = split_params
         self.merge_params = merge_params
         self.boto_session = boto_session
         self.source_file_dir = source_file_dir
         self.dump_file_dir = dump_file_dir
         mkdir_if_not_exist(self.dump_file_dir)
+
+    def upload_files(self):
+        s3_bkt = self.boto_session.resource("s3").Bucket(file_config["bucket"])
+        merge_dir = os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id)
+        for path, subdirs, files in os.walk(merge_dir):
+            for file in files:
+                file_dir = os.path.join(path, file)
+                s3_path = os.path.join(file_config["s3_dest"], self.mission_id, file)
+                s3_bkt.upload_file(file_dir, s3_path)
 
     def process_job(self):
         split_files = self.process_split()
