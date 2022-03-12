@@ -1,23 +1,12 @@
-import os
+import os, psutil
 
 from pikepdf import Pdf as PDF
-from flask import current_app as app
+import application as current_app
 import json
 import shortuuid
-import boto3
 import datetime
 import time
-
-import decorators
-
-file_config = {
-    "bucket": "pdf-slicer",
-    "s3_source": "source",
-    "s3_dest": "ready",
-    "dest_split": "split",
-    "dest_merge": "merge"
-}
-
+import shutil
 
 def get_random_pdf_name():
     uuid = shortuuid.uuid()
@@ -39,8 +28,16 @@ def mkdir_if_not_exist(dir):
         os.makedirs(dir)
 
 
-def prepare_files(mission_id, file_list, dest_dir, boto_session):
-    s3_bucket = boto_session.resource('s3').Bucket(file_config["bucket"])
+def logging_mission(tag, text):
+    current_ram = round(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2, 2)
+    current_ram_percen = round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 2)
+    current_cpu_percen = round(psutil.cpu_percent(), 2)
+    current_app.logger.info(f"cpu: {current_cpu_percen}% \tram: {current_ram} \t{current_ram_percen}% {tag} -- {text}")
+
+
+def prepare_files(mission_id, s3_bkt, s3_dir, file_list, dest_dir, boto_session):
+    logging_mission(mission_id, f"preparing file for mission")
+    s3_bucket = boto_session.resource('s3').Bucket(s3_bkt)
 
     # create local folder for mission
     local_folder = os.path.join(dest_dir, mission_id)
@@ -48,15 +45,16 @@ def prepare_files(mission_id, file_list, dest_dir, boto_session):
 
     # download form s3
     for file in file_list:
-        s3_file_dir = os.path.join(file_config['s3_source'], mission_id, file)
+        s3_file_dir = os.path.join(s3_dir, mission_id, file)
         local_file_dir = os.path.join(local_folder, file)
         if not os.path.exists(local_file_dir):
             s3_bucket.download_file(s3_file_dir, local_file_dir)
+    logging_mission(mission_id, f"preparing file for mission finished")
 
 
 class Mission(object):
     def __init__(self, mission_id, split_params, merge_params, boto_session, source_file_dir, dump_file_dir):
-        self.mission_id: str = mission_id
+        self.mission_id = mission_id
         self.split_params = split_params
         self.merge_params = merge_params
         self.boto_session = boto_session
@@ -64,25 +62,29 @@ class Mission(object):
         self.dump_file_dir = dump_file_dir
         mkdir_if_not_exist(self.dump_file_dir)
 
-    def upload_files(self):
-        s3_bkt = self.boto_session.resource("s3").Bucket(file_config["bucket"])
-        merge_dir = os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id)
-        for path, subdirs, files in os.walk(merge_dir):
-            for file in files:
-                file_dir = os.path.join(path, file)
-                s3_path = os.path.join(file_config["s3_dest"], self.mission_id, file)
-                s3_bkt.upload_file(file_dir, s3_path)
+    def upload_files(self, s3_bkt, s3_dest_dir):
+        logging_mission(self.mission_id, "start uploading files")
+        s3_bkt = self.boto_session.resource("s3").Bucket(s3_bkt)
+        result_dir = os.path.join(self.dump_file_dir, self.mission_id)
+
+        zip_name = f"{self.mission_id}-result"
+        zip_dir = os.path.join(self.dump_file_dir, zip_name)
+        shutil.make_archive(zip_dir, 'zip', result_dir)
+        zip_dir += ".zip"
+        zip_name += ".zip"
+        s3_path = os.path.join(s3_dest_dir, self.mission_id, zip_name)
+        s3_bkt.upload_file(zip_dir, s3_path)
+        os.remove(zip_dir)
+
+        logging_mission(self.mission_id, "file uploading finished")
 
     def process_job(self):
-        split_files = self.process_split()
-        merge_files = self.process_merge()
+        logging_mission(self.mission_id, f"mission started")
+        self.process_split()
+        self.process_merge()
+        logging_mission(self.mission_id, f"mission finished")
 
     def __split_file(self, source_file_dir: str, result_file_name, result_file_dir, pg_from, pg_to):
-        app.logger.info(f"New Split Mission\n"
-                        f"\t==>source_dir: {source_file_dir}\n"
-                        f"\t==>result file name: {result_file_name}\n"
-                        f"\t==>page from: {pg_from}\t page to: {pg_to}")
-
         dest_file_dir = os.path.join(result_file_dir, result_file_name)
         pg_from -= 1
         pg_to -= 1
@@ -95,8 +97,9 @@ class Mission(object):
         dest_pdf.save(dest_file_dir)
 
     def process_split(self):
+        logging_mission(self.mission_id, f"splitting job start")
         # prepare mission split dir
-        target_dir = os.path.join(self.dump_file_dir, file_config["dest_split"], self.mission_id)
+        target_dir = os.path.join(self.dump_file_dir, self.mission_id)
         mkdir_if_not_exist(target_dir)
         # iter through all the files need to be split on list
         for file_name, split_params in self.split_params.items():
@@ -107,9 +110,11 @@ class Mission(object):
                 page_to = split_param["to"]
                 splitted_file_name = f"file_No_{slice_id}_pg{page_from}-{page_to}.pdf"
                 self.__split_file(source_file_dir, splitted_file_name, target_dir, page_from, page_to)
+        logging_mission(self.mission_id, f"splitting job finished")
 
     def process_merge(self):
-        target_dir = os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id)
+        logging_mission(self.mission_id, f"merging job start")
+        target_dir = os.path.join(self.dump_file_dir, self.mission_id)
         mkdir_if_not_exist(target_dir)
 
         keys = self.merge_params.keys()
@@ -140,11 +145,12 @@ class Mission(object):
         file_name = f"merged-{self.mission_id}.pdf"
         target_file_dir = os.path.join(target_dir, file_name)
         dest_pdf.save(target_file_dir)
+        logging_mission(self.mission_id, f"merging job finished")
 
     def clean_up(self):
-        dir_list = [os.path.join(self.dump_file_dir, file_config["dest_split"], self.mission_id),
-                    os.path.join(self.dump_file_dir, file_config["dest_merge"], self.mission_id),
-                    os.path.join(self.source_file_dir, self.mission_id)]
+        logging_mission(self.mission_id, f"cleaning up mission")
+        dir_list = [os.path.join(self.dump_file_dir, self.mission_id),
+                    self.source_file_dir]
 
         for dir in dir_list:
             for root, dirs, files in os.walk(dir):
