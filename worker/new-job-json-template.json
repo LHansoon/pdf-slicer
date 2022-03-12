@@ -20,7 +20,7 @@
             {"part-id": 2, "from": 5, "to": 7}
         ]
     },
-    "merge-params": {
+    "merge-params": [{
         "0": {
             "file-name": "file-1.txt",
             "inner-merge-order": {
@@ -40,5 +40,5 @@
             "file-name": "file-1.txt",
             "inner-merge-order": { }
         }
-    }
+    }]
 }

@@ -117,35 +117,38 @@ class Mission(object):
         target_dir = os.path.join(self.dump_file_dir, self.mission_id)
         mkdir_if_not_exist(target_dir)
 
-        keys = self.merge_params.keys()
-        max_key = int(max(keys))
+        i = 1
+        for merge_job in self.merge_params:
+            keys = merge_job.keys()
+            max_key = int(max(keys))
 
-        dest_pdf = PDF.new()
-        for number in range(max_key + 1):
-            slice_params = self.merge_params[f"{number}"]
-            file_name = slice_params["file-name"]
-            source_file_dir = os.path.join(self.source_file_dir, file_name)
-            source_pdf = PDF.open(source_file_dir)
+            dest_pdf = PDF.new()
+            for number in range(max_key + 1):
+                slice_params = merge_job[f"{number}"]
+                file_name = slice_params["file-name"]
+                source_file_dir = os.path.join(self.source_file_dir, file_name)
+                source_pdf = PDF.open(source_file_dir)
 
-            segments = []
-            for segment_key in slice_params["inner-merge-order"].keys():
-                segment_pages = []
-                segment_params = slice_params["inner-merge-order"][segment_key]
-                pg_from = segment_params["from"]
-                pg_to = segment_params["to"]
-                for pg_num in range(pg_from, pg_to + 1):
-                    page = source_pdf.pages[pg_num - 1]
-                    segment_pages.append(page)
-                segments.insert(int(segment_key), segment_pages)
+                segments = []
+                for segment_key in slice_params["inner-merge-order"].keys():
+                    segment_pages = []
+                    segment_params = slice_params["inner-merge-order"][segment_key]
+                    pg_from = segment_params["from"]
+                    pg_to = segment_params["to"]
+                    for pg_num in range(pg_from, pg_to + 1):
+                        page = source_pdf.pages[pg_num - 1]
+                        segment_pages.append(page)
+                    segments.insert(int(segment_key), segment_pages)
 
-            for segment in segments:
-                for page in segment:
-                    dest_pdf.pages.append(page)
+                for segment in segments:
+                    for page in segment:
+                        dest_pdf.pages.append(page)
 
-        file_name = f"merged-{self.mission_id}.pdf"
-        target_file_dir = os.path.join(target_dir, file_name)
-        dest_pdf.save(target_file_dir)
-        logging_mission(self.mission_id, f"merging job finished")
+            file_name = f"merged-mission-{i}-{self.mission_id}.pdf"
+            target_file_dir = os.path.join(target_dir, file_name)
+            dest_pdf.save(target_file_dir)
+            logging_mission(self.mission_id, f"merging job finished")
+            i += 1
 
 
 def clean_up(mission_id, source_file_dir, dump_file_dir):
