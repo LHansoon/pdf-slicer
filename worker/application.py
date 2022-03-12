@@ -27,14 +27,15 @@ def before_first_request():
     application.logger.info(f"===          tmp download file dir is -> {file_dir}")
     application.logger.info(f"===          tmp finished file dir is -> {finished_dir}")
 
-
 def execute_mission(json_request):
+    session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
+                            aws_secret_access_key=os.environ['aws_secret_access_key'],
+                            aws_session_token=os.environ['aws_session_token'])
+    message = {"mission-id": "", "status": "finished"}
     try:
-        session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
-                                aws_secret_access_key=os.environ['aws_secret_access_key'],
-                                aws_session_token=os.environ['aws_session_token'])
         mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request)
         mission_id = mission_params["mission-id"]
+        message["mission-id"] = mission_id
         worker.prepare_files(mission_id=mission_id,
                              s3_bkt=s3_bkt,
                              s3_dir=s3_source,
@@ -55,7 +56,14 @@ def execute_mission(json_request):
         mission.clean_up()
     except Exception as e:
         application.logger.info(traceback.format_exc())
-
+        message["status"] = "failed"
+    finally:
+        url = "https://sqs.us-east-1.amazonaws.com/323940432787/finished-job-queue"
+        sqs_client = session.client("sqs", region_name="us-east-1")
+        sqs_client.send_message(
+            QueueUrl=url,
+            MessageBody=json.dumps(message)
+        )
 
 @application.route("/process-mission", methods=["POST"])
 @decorators.router_wrapper
