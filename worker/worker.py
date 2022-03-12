@@ -147,14 +147,17 @@ class Mission(object):
         dest_pdf.save(target_file_dir)
         logging_mission(self.mission_id, f"merging job finished")
 
-    def clean_up(self):
-        logging_mission(self.mission_id, f"cleaning up mission")
-        dir_list = [os.path.join(self.dump_file_dir, self.mission_id),
-                    self.source_file_dir]
 
-        for dir in dir_list:
-            for root, dirs, files in os.walk(dir):
-                for file in files:
-                    path = os.path.join(dir, file)
+def clean_up(mission_id, source_file_dir, dump_file_dir):
+    logging_mission(mission_id, f"cleaning up mission")
+    dir_list = [os.path.join(dump_file_dir, mission_id),
+                source_file_dir]
+
+    for dir in dir_list:
+        for root, dirs, files in os.walk(dir):
+            for file in files:
+                path = os.path.join(dir, file)
+                if os.path.exists(path):
                     os.remove(path)
+        if os.path.exists(dir):
             os.rmdir(dir)

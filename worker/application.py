@@ -28,6 +28,7 @@ def before_first_request():
     application.logger.info(f"===          tmp finished file dir is -> {finished_dir}")
 
 def execute_mission(json_request):
+    global mission_id
     session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                             aws_secret_access_key=os.environ['aws_secret_access_key'],
                             aws_session_token=os.environ['aws_session_token'])
@@ -53,7 +54,6 @@ def execute_mission(json_request):
         mission.process_job()
         mission.upload_files(s3_bkt=s3_bkt,
                              s3_dest_dir=s3_dest)
-        mission.clean_up()
     except Exception as e:
         application.logger.info(traceback.format_exc())
         message["status"] = "failed"
@@ -64,6 +64,8 @@ def execute_mission(json_request):
             QueueUrl=url,
             MessageBody=json.dumps(message)
         )
+        if mission_id is not None:
+            worker.clean_up(mission_id, os.path.join(file_dir, mission_id), finished_dir)
 
 @application.route("/process-mission", methods=["POST"])
 @decorators.router_wrapper
