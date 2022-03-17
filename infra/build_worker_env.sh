@@ -15,4 +15,3 @@ docker run \
         pip install -r /dot/requirements.txt --quiet &&\
         rm /dot/virt/bin/python &&\
         ln -s /var/app/venv/staging-LQM1lest/bin/python /dot/virt/bin/python'
-

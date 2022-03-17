@@ -59,7 +59,7 @@ def execute_mission(json_request):
         message["status"] = "failed"
     finally:
         url = "https://sqs.us-east-1.amazonaws.com/323940432787/finished-job-queue"
-        sqs_client = session.client("sqs", region_name="us-east-1")
+        sqs_client = session.client("sqs", region_name="us-east-1", endpoint_url="https://sqs.us-east-1.amazonaws.com")
         sqs_client.send_message(
             QueueUrl=url,
             MessageBody=json.dumps(message)
