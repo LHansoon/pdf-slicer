@@ -1,29 +1,44 @@
 {
-    "mission-id": "<some sort of id>",
-    "file-list": {
-        "mission-translation": true,
-        "mission-translation-target": "Chinese",
-        "mission-translation-source": "English"
-    },
     "mission-params": {
-        "split-params": {
-            "file-1.txt": [
-                {"from": 1, "to": 3},
-                {"from": 5, "to": 20}
-            ],
-            "file-2.txt": [
-                {"from": 3, "to": 50},
-                {"from": 2, "to": 10},
-                {"from": 5, "to": 7}
-            ],
-            "file-3.txt": []
-        },
-        "merge-params": {
-            "merge-order": {
-                "1": "file-1.txt",
-                "2": "file-3.txt",
-                "3": "file-2.txt"
+        "mission-id": "<some sort of id>",
+        "mission-requester-email": "somebody@gmail.com",
+        "mission-email-notification-requested": false,
+        "mission-file-list": [
+            "file-1.txt",
+            "file-2.txt",
+            "file-3.txt"
+        ]
+    },
+    "split-params": {
+        "file-1.txt": [
+            {"part-id": 0, "from": 1, "to": 3},
+            {"part-id": 1, "from": 5, "to": 20}
+        ],
+        "file-2.txt": [
+            {"part-id": 0, "from": 3, "to": 50},
+            {"part-id": 1, "from": 2, "to": 10},
+            {"part-id": 2, "from": 5, "to": 7}
+        ]
+    },
+    "merge-params": [{
+        "0": {
+            "file-name": "file-1.txt",
+            "inner-merge-order": {
+                "0": {"from": 1, "to": 3},
+                "1": {"from": 3, "to": 6}
             }
+        },
+        "1": {
+            "file-name": "file-2.txt",
+            "inner-merge-order": {
+                "0": {"from": 1, "to": 3},
+                "1": {"from": 5, "to": 90},
+                "2": {"from": 200, "to": 201}
+            }
+        },
+        "2": {
+            "file-name": "file-1.txt",
+            "inner-merge-order": { }
         }
-    }
+    }]
 }

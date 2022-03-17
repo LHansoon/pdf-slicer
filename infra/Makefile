@@ -48,6 +48,18 @@ configurepublic:
 
 
 
+buildworker:
+	@docker build --no-cache --platform linux/amd64 -t pdf-worker -f ../infra/dockerfile-worker ../worker/
+
+pushworker:
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com
+	@docker tag pdf-worker 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-worker:latest
+	@docker push 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-worker:latest
+
+updatecredential:
+	@cat aws_credential > ~/.aws/credentials
+
+updateworkerimage: updatecredential buildworker pushworker
 
 #tar -czvf venv.tar.gz venv
 #scp -i hansonawsacademy.pem venv.tar.gz ec2-user@10.0.1.254:/home/ec2-user

@@ -1,0 +1,5 @@
+Flask==2.0.2
+pikepdf==5.0.1
+shortuuid==1.0.8
+boto3==1.21.16
+psutil==5.8.0

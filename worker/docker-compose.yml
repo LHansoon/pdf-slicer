@@ -1,0 +1,15 @@
+# for local test, use pdf-worker as image
+
+version: "3"
+services:
+  pdf-worker:
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-worker:latest
+    container_name: pdf-worker
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: ./
+        target: /work/download_files
+    env_file:
+      - worker-docker.env
