@@ -1,0 +1,14 @@
+version: "3"
+services:
+  app1:
+    image: pdf-worker
+    container_name: pdf-worker
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: ./download_files
+        target: /work/download_files
+      - type: bind
+        source: ./finished_files
+        target: /work/finished_files
