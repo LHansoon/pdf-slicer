@@ -48,6 +48,8 @@ configurepublic:
 
 
 
+# actual useful for WORKER
+
 buildworker:
 	@docker build --no-cache --platform linux/amd64 -t pdf-worker -f ../infra/dockerfile-worker ../worker/
 
@@ -60,6 +62,12 @@ updatecredential:
 	@cat aws_credential > ~/.aws/credentials
 
 updateworkerimage: updatecredential buildworker pushworker
+
+buildworkerenv:
+	./build_worker_env.sh
+
+update-aws-credential-on-eb: updatecredential
+	./update-aws-credential.sh
 
 #tar -czvf venv.tar.gz venv
 #scp -i hansonawsacademy.pem venv.tar.gz ec2-user@10.0.1.254:/home/ec2-user
