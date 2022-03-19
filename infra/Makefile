@@ -66,8 +66,10 @@ updateworkerimage: updatecredential buildworker pushworker
 buildworkerenv:
 	./build_worker_env.sh
 
-update-aws-credential-on-eb: updatecredential
-	./update-aws-credential.sh
+updateall: updatecredential
+	(cd ../worker && ./update_env.sh)
+	(cd ../lambda/new-job-controller && ./update_env.sh)
+
 
 #tar -czvf venv.tar.gz venv
 #scp -i hansonawsacademy.pem venv.tar.gz ec2-user@10.0.1.254:/home/ec2-user
