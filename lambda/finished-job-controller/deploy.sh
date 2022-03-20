@@ -14,5 +14,5 @@ zip -g $pack_name lambda_function.py
 echo Deleting the venv
 rm -rf venv
 
-aws lambda update-function-code --function-name email-notification-sender --zip-file fileb://$pack_name
+aws lambda update-function-code --function-name finished-job-controller --zip-file fileb://$pack_name
 rm $pack_name

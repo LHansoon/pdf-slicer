@@ -1,6 +1,0 @@
-{
-  "bucket": "pdf-slicer",
-  "dir": "ready/",
-  "recipient": "hn427433@dal.ca",
-  "mission_id": "asdfasdf-3e23423423423a-f2ef2ef2e23f"
-}

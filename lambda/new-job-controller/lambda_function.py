@@ -19,7 +19,7 @@ def generate_mission_id():
 def lambda_handler(event, context):
     print(event)
 
-    mission_id = generate_mission_id()
+    # mission_id = generate_mission_id()
     records = event["Records"]
     for record in records:
         data = record["body"]
@@ -28,21 +28,23 @@ def lambda_handler(event, context):
 
         response = table.put_item(
             Item={
-                "mission-id": mission_id,
-                "mission-status": "Running",
+                "mission-id": data["mission-params"]["mission-id"],
+                "mission-status": "running",
                 "additional-info": {
-                    "mission-requester-email": data["mission-requester-email"],
-                    "mission-email-notification-requested": data["mission-email-notification-requested"]
+                    "mission-requester-email": data["mission-params"]["mission-requester-email"],
+                    "mission-email-notification-requested": data["mission-params"]["mission-email-notification-requested"]
                 }
             }
         )
 
         request_info = data
-        request_info["mission-params"]["mission-id"] = mission_id
+        print(request_info)
+        # request_info["mission-params"]["mission-id"] = mission_id
 
         worker_ip = os.environ['worker_ip']
-        worker_port = os.environ['worker_port'],
+        worker_port = os.environ['worker_port']
         r = requests.post(f"http://{worker_ip}:{worker_port}/process-mission", json=request_info)
+        print(r.content)
 
     return {
         'statusCode': 200,
