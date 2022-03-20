@@ -36,3 +36,15 @@ in case you want the venv build to upload, run `./build_worker_env.sh`, it will 
    2. Make sure that the IAM role you created have all the permissions to access related services
    3. Make sure that the subnet you created having needed AWS service endpoints
    4. Make sure you have the port exposed in the `docker-compose.yml` matching the port number configured in `dockerfile-worker`
+
+
+# Lambda
+
+### build and push
+1. There are `deploy.sh`s in each lambda dir
+2. run it after you have the local credential updated, it's fully automated
+3. That's it ᕕ( ᐛ )ᕗ
+
+### update env var
+1. if you really have to, update and run `update_env.sh`
+2. That's it again ᕕ( ᐛ )ᕗ
