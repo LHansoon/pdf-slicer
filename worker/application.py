@@ -32,11 +32,12 @@ def execute_mission(json_request):
     session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                             aws_secret_access_key=os.environ['aws_secret_access_key'],
                             aws_session_token=os.environ['aws_session_token'])
-    message = {"mission-id": "", "status": "finished"}
+    message = {"mission-id": "", "mission-status": "finished"}
     try:
         mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request)
         mission_id = mission_params["mission-id"]
         message["mission-id"] = mission_id
+        message["additional-info"] = mission_params
         worker.prepare_files(mission_id=mission_id,
                              s3_bkt=s3_bkt,
                              s3_dir=s3_source,
@@ -56,7 +57,7 @@ def execute_mission(json_request):
                              s3_dest_dir=s3_dest)
     except Exception as e:
         application.logger.info(traceback.format_exc())
-        message["status"] = "failed"
+        message["mission-status"] = "failed"
     finally:
         url = "https://sqs.us-east-1.amazonaws.com/323940432787/finished-job-queue"
         sqs_client = session.client("sqs", region_name="us-east-1", endpoint_url="https://sqs.us-east-1.amazonaws.com")
@@ -82,6 +83,11 @@ def start_mission():
 @application.route("/")
 def default():
     return "hello budy"
+
+
+@application.route("/healthCheck")
+def eb_health_check():
+    return "I am alive"
 
 if __name__ == '__main__':
     application.run(host="0.0.0.0", port=8000, debug=True)
