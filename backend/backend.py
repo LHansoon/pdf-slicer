@@ -4,6 +4,8 @@ import boto3
 import json
 import os
 
+from decorators import exception_holder
+
 app = Flask(__name__)
 
 # initialize the boto3 session
@@ -21,6 +23,7 @@ def get_session():
                          aws_secret_access_key=os.environ['aws_secret_access_key'],
                          aws_session_token=os.environ['aws_session_token'])
 
+@exception_holder
 @app.route("/getresult", methods=["GET"])
 def getresult():
     request_args = request.args
@@ -37,7 +40,7 @@ def getresult():
     except KeyError:
         return {"request-status": "fail", "Message": "Key error, make sure correct arguments"}, 200
 
-
+@exception_holder
 @app.route("/postrequest", methods=["POST"])
 def postrequest():
     json_request = request.json
