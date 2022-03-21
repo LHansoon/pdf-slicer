@@ -48,3 +48,15 @@ in case you want the venv build to upload, run `./build_worker_env.sh`, it will 
 ### update env var
 1. if you really have to, update and run `update_env.sh`
 2. That's it again ᕕ( ᐛ )ᕗ
+
+
+# Backend
+It's similar to worker
+
+### build and push
+
+1. create credential file in the infra dir
+2. `make updatebackendimage` in infra dir
+
+#### Docker
+Depending on frontend config since we are using docker compose to run two containers in one environment

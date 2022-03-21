@@ -66,6 +66,24 @@ updateworkerimage: updatecredential buildworker pushworker
 buildworkerenv:
 	./build_worker_env.sh
 
+
+# useful for backend
+
+buildback:
+	@docker build --no-cache --platform linux/amd64 -t pdf-backend -f ../infra/dockerfile-backend ../backend/
+
+pushback:
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com
+	@docker tag pdf-backend 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
+	@docker push 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
+
+updatebackendimage: updatecredential buildback pushback
+
+
+
+
+
+
 updateall: updatecredential
 	(cd ../worker && ./update_env.sh)
 	(cd ../lambda/new-job-controller && ./update_env.sh)

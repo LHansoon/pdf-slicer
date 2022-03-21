@@ -1,11 +1,10 @@
 FROM python:3.7
-ENV FLASK_APP=application.py
+ENV FLASK_APP=backend.py
 ENV FLASK_ENV=development
 ENV FLASK_DEBUG=1
 WORKDIR /work
-COPY ./application.py /work
+COPY ./backend.py /work
 COPY ./decorators.py /work
-COPY ./worker.py /work
-COPY ./requirements.txt /work
-RUN pip install -r /work/requirements.txt
+COPY ./requirements-backend.txt /work
+RUN pip install -r /work/requirements-backend.txt
 CMD ["python", "-m", "flask", "run", "--port", "8000", "--host", "0.0.0.0", "--with-threads"]
