@@ -11,20 +11,35 @@ session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                         aws_secret_access_key=os.environ['aws_secret_access_key'],
                         aws_session_token=os.environ['aws_session_token'])
 
+FILE_UPLOAD_LOC = "upload"
+S3_BKT = "pdf-slicer"
+S3_UPLOAD_TARGET = "source"
+
+
+def get_session():
+    return boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
+                         aws_secret_access_key=os.environ['aws_secret_access_key'],
+                         aws_session_token=os.environ['aws_session_token'])
+
 @app.route("/getresult", methods=["GET"])
-def index():
-    json_request = request.json
-
+def getresult():
+    request_args = request.args
     try:
-        mission_id = json_request["mission_id"]
+        mission_id = request_args["mission-id"]
 
-        return "haha"
-    except Exception as e:
-        return "mission not exist pal ( ・_ゝ・)"
+        session = get_session()
+        db = session.resource('dynamodb')
+        table = db.Table('missions')
+        response = table.get_item(Key={"mission-id": mission_id})
+        status = response["Item"]["mission-status"]
+
+        return {"mission-status": status, "request-status": "success", "Message": "request good"}, 200
+    except KeyError:
+        return {"request-status": "fail", "Message": "Key error, make sure correct arguments"}, 200
 
 
 @app.route("/postrequest", methods=["POST"])
-def index():
+def postrequest():
     json_request = request.json
     try:
         text = json_request["text"]
