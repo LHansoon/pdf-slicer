@@ -11,11 +11,6 @@ from decorators import exception_holder
 
 app = Flask(__name__)
 
-# initialize the boto3 session
-session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
-                        aws_secret_access_key=os.environ['aws_secret_access_key'],
-                        aws_session_token=os.environ['aws_session_token'])
-
 FILE_UPLOAD_LOC = "upload"
 S3_BKT = "pdf-slicer"
 S3_UPLOAD_TARGET = "source"
@@ -48,6 +43,7 @@ def get_result():
 @app.route("/postrequest", methods=["POST"])
 def post_request():
     json_request = request.json
+    session = get_session()
 
     mission_id = json_request["mission-params"]["mission-id"]
     file_list = json_request["mission-params"]["mission-file-list"]
