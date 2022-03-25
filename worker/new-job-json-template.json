@@ -4,6 +4,7 @@
         "mission-requester-email": "somebody@gmail.com",
         "mission-email-notification-requested": false,
         "mission-translate": true,
+        "mission-source-language": "en",
         "mission-target-language": "zh",
         "mission-file-list": [
             "file-1.txt",

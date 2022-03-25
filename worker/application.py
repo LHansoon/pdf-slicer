@@ -40,7 +40,8 @@ def execute_mission(json_request):
         message["additional-info"] = mission_params
 
         translate_params = {"if_translate": mission_params["mission-translate"],
-                            "target_language": mission_params["mission-target-language"]}
+                            "target_language": mission_params["mission-target-language"],
+                            "source_language": mission_params["mission-source-language"]}
         worker.prepare_files(mission_id=mission_id,
                              s3_bkt=s3_bkt,
                              s3_dir=s3_source,
