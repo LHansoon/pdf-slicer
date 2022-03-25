@@ -38,6 +38,9 @@ def execute_mission(json_request):
         mission_id = mission_params["mission-id"]
         message["mission-id"] = mission_id
         message["additional-info"] = mission_params
+
+        translate_params = {"if_translate": mission_params["mission-translate"],
+                            "target_language": mission_params["mission-target-language"]}
         worker.prepare_files(mission_id=mission_id,
                              s3_bkt=s3_bkt,
                              s3_dir=s3_source,
@@ -46,6 +49,7 @@ def execute_mission(json_request):
                              boto_session=session)
 
         mission = worker.Mission(mission_id=mission_id,
+                                 translate_params=translate_params,
                                  split_params=split_job_params,
                                  merge_params=merge_job_params,
                                  boto_session=session,

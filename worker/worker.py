@@ -1,5 +1,6 @@
 import os, psutil
 
+import pikepdf
 from pikepdf import Pdf as PDF
 import application as current_app
 import json
@@ -7,6 +8,9 @@ import shortuuid
 import datetime
 import time
 import shutil
+
+# this is pymupdf
+import fitz
 
 def get_random_pdf_name():
     uuid = shortuuid.uuid()
@@ -53,8 +57,9 @@ def prepare_files(mission_id, s3_bkt, s3_dir, file_list, dest_dir, boto_session)
 
 
 class Mission(object):
-    def __init__(self, mission_id, split_params, merge_params, boto_session, source_file_dir, dump_file_dir):
+    def __init__(self, mission_id, translate_params, split_params, merge_params, boto_session, source_file_dir, dump_file_dir):
         self.mission_id = mission_id
+        self.translate_params = translate_params
         self.split_params = split_params
         self.merge_params = merge_params
         self.boto_session = boto_session
@@ -82,6 +87,8 @@ class Mission(object):
         logging_mission(self.mission_id, f"mission started")
         self.process_split()
         self.process_merge()
+        if self.translate_params["if_translate"]:
+            self.process_translate()
         logging_mission(self.mission_id, f"mission finished")
 
     def __split_file(self, source_file_dir: str, result_file_name, result_file_dir, pg_from, pg_to):
@@ -95,6 +102,36 @@ class Mission(object):
             page = source_pdf.pages[pg_num]
             dest_pdf.pages.append(page)
         dest_pdf.save(dest_file_dir)
+
+    def process_translate(self):
+        logging_mission(self.mission_id, f"translation job started")
+        source_dir = os.path.join(self.dump_file_dir, self.mission_id)
+
+        translate = self.boto_session.client('translate')
+
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                path = os.path.join(source_dir, str(file))
+                filename, file_extension = os.path.splitext(file)
+                target_language = self.translate_params["target_language"]
+                translated_file_name = os.path.join(source_dir, str(filename) + f"_{target_language}.txt")
+
+                logging_mission(self.mission_id, f"working on: {translated_file_name}")
+
+                target_file = open(translated_file_name, "a")
+                with fitz.Document(path) as original:
+                    i = 1
+                    for page in original:
+                        page_text = page.get_text()
+                        result = translate.translate_text(Text=page_text,
+                                                 SourceLanguageCode="en",
+                                                 TargetLanguageCode=target_language)
+                        target_file.write(f"===page {i}===\n")
+                        target_file.write(result["TranslatedText"])
+                        i += 1
+                target_file.close()
+
+        logging_mission(self.mission_id, f"translation job finished")
 
     def process_split(self):
         logging_mission(self.mission_id, f"splitting job start")

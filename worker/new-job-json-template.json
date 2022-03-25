@@ -3,6 +3,8 @@
         "mission-id": "<some sort of id>",
         "mission-requester-email": "somebody@gmail.com",
         "mission-email-notification-requested": false,
+        "mission-translate": true,
+        "mission-target-language": "zh",
         "mission-file-list": [
             "file-1.txt",
             "file-2.txt",
