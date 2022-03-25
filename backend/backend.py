@@ -36,7 +36,7 @@ def get_result():
 
         return {"mission-status": status, "request-status": "success", "Message": "request good"}, 200
     except KeyError:
-        return {"request-status": "fail", "Message": "Key error, make sure correct arguments"}, 200
+        return {"request-status": "creating", "Message": "Either you have a wrong key entered or the job is still creating"}, 200
 
 
 @exception_holder
