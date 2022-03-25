@@ -114,6 +114,7 @@ class Mission(object):
                 path = os.path.join(source_dir, str(file))
                 filename, file_extension = os.path.splitext(file)
                 target_language = self.translate_params["target_language"]
+                source_language = self.translate_params["source_language"]
                 translated_file_name = os.path.join(source_dir, str(filename) + f"_{target_language}.txt")
 
                 logging_mission(self.mission_id, f"working on: {translated_file_name}")
@@ -124,7 +125,7 @@ class Mission(object):
                     for page in original:
                         page_text = page.get_text()
                         result = translate.translate_text(Text=page_text,
-                                                 SourceLanguageCode="en",
+                                                 SourceLanguageCode=source_language,
                                                  TargetLanguageCode=target_language)
                         target_file.write(f"===page {i}===\n")
                         target_file.write(result["TranslatedText"])
