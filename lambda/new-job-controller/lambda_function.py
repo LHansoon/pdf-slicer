@@ -42,8 +42,7 @@ def lambda_handler(event, context):
         # request_info["mission-params"]["mission-id"] = mission_id
 
         worker_ip = os.environ['worker_ip']
-        worker_port = os.environ['worker_port']
-        r = requests.post(f"http://{worker_ip}:{worker_port}/process-mission", json=request_info)
+        r = requests.post(f"http://{worker_ip}/process-mission", json=request_info)
         print(r.content)
 
     return {
