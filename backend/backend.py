@@ -8,8 +8,13 @@ import shutil
 
 from flask import Flask, request
 from decorators import exception_holder
+from flask_cors import CORS
 
 app = Flask(__name__)
+app.config.from_object(__name__)
+
+# enable CORS
+CORS(app, resources={r'/*': {'origins': '*'}})
 
 FILE_UPLOAD_LOC = "upload"
 S3_BKT = "pdf-slicer"
