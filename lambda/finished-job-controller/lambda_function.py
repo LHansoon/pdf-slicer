@@ -51,6 +51,23 @@ def send_email(user, pwd, recipient, subject, body):
         print("failed to send mail")
 
 
+def send_notification(additional_info, mission_id, subject, body):
+    recipient = additional_info["additional-info"]["mission-requester-email"]
+
+    print("getting creds")
+    email_cred = get_secret()
+    print("got it")
+
+    if email_cred is None:
+        return {
+            'statusCode': 500,
+            'body': "Cred error, not able to send email"
+        }
+
+    email_cred = json.loads(email_cred)
+    send_email(email_cred["username"], email_cred["password"], recipient, subject, body)
+
+
 def lambda_handler(event, context):
     print(event)
 
@@ -61,8 +78,12 @@ def lambda_handler(event, context):
         table = db_client.Table('missions')
 
         mission_id = data["mission-id"]
-        mission_status = data["mission-status"]
+        print(f"{mission_id} currently running")
 
+        mission_status = data["mission-status"]
+        print(f"{mission_id} status: [{mission_status}]")
+
+        print(f"{mission_id} updating dynamo db")
         table.update_item(
             Key={"mission-id": mission_id},
             UpdateExpression="set #colName = :s",
@@ -71,30 +92,20 @@ def lambda_handler(event, context):
             ReturnValues="NONE"
         )
 
-        response = table.get_item(Key={"mission-id": mission_id})["Item"]
-        print(response)
-        if response["additional-info"]["mission-email-notification-requested"] is True:
-            recipient = response["additional-info"]["mission-requester-email"]
+        additional_info = table.get_item(Key={"mission-id": mission_id})["Item"]
+        print(additional_info)
+        if additional_info["additional-info"]["mission-email-notification-requested"] is True:
+            if mission_status == "finished":
+                bucket = os.environ['bucket']
+                dir = os.environ['dir']
+                url = f"https://{bucket}.s3.amazonaws.com/{dir}{mission_id}/{mission_id}-result.zip"
+                subject = "Your mission at email splitter has finished"
+                body = f"Hello,\nHere is the download link for your files:\n{url}"
+            else:
+                subject = "Your mission at email splitter has failed"
+                body = f"Hello,\nMission id: {mission_id} has filed, please contact the admin for further assistance"
 
-            print("getting creds")
-            email_cred = get_secret()
-            print("got it")
-
-            if email_cred is None:
-                return {
-                    'statusCode': 500,
-                    'body': "Cred error, not able to send email"
-                }
-
-            bucket = os.environ['bucket']
-            dir = os.environ['dir']
-            url = f"https://{bucket}.s3.amazonaws.com/{dir}{mission_id}/{mission_id}-result.zip"
-
-            subject = "Your mission at email splitter has finished"
-            body = f"Hello,\nHere is the download link for your files:\n{url}"
-
-            email_cred = json.loads(email_cred)
-            send_email(email_cred["username"], email_cred["password"], recipient, subject, body)
+            send_notification(additional_info, mission_id, subject, body)
 
     return {
         'statusCode': 200,

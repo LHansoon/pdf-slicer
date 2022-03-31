@@ -31,13 +31,13 @@ def execute_mission(json_request):
     global mission_id
     session = boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                             aws_secret_access_key=os.environ['aws_secret_access_key'],
-                            aws_session_token=os.environ['aws_session_token'])
+                            aws_session_token=os.environ['aws_session_token'],
+                            region_name="us-east-1")
     message = {"mission-id": "", "mission-status": "finished"}
     try:
         mission_params, split_job_params, merge_job_params = worker.parse_new_job_json(json_request)
         mission_id = mission_params["mission-id"]
         message["mission-id"] = mission_id
-        message["additional-info"] = mission_params
 
         translate_params = {"if_translate": mission_params["mission-translate"],
                             "target_language": mission_params["mission-target-language"],

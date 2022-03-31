@@ -65,7 +65,7 @@ def post_request():
         s3_bkt.upload_file(curr_dir, dest_s3_path)
 
     app.logger.info(f"{mission_id} - uploading finished, deleting dir")
-    shutil.rmtree(os.path.join(FILE_UPLOAD_LOC, mission_id))
+    # shutil.rmtree(os.path.join(FILE_UPLOAD_LOC, mission_id))
     app.logger.info(f"{mission_id} - deleting finished")
 
     app.logger.info(f"{mission_id} - sending request to sqs")
