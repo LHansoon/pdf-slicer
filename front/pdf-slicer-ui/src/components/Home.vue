@@ -20,12 +20,15 @@
               <td>foo</td>
               <td>
                 <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-warning btn-sm">Merge</button>
-                  <button type="button" class="btn btn-dark btn-sm">Split</button>
                   <button type="button" class="btn btn-danger btn-sm">Delete</button>
                 </div>
               </td>
             </tr>
+          <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-warning btn-sm">Merge</button>
+                  <button type="button" class="btn btn-dark btn-sm">Split</button>
+                  <button type="button" class="btn btn-info btn-sm">Start Processing</button>
+          </div>
           </tbody>
         </table>
       </div>
@@ -36,6 +39,22 @@
 <script>
 import axios from 'axios';
 
+// eslint-disable-next-line camelcase
+const json_template = {
+  'mission-params': {
+    'mission-id': '',
+    'mission-requester-email': '',
+    'mission-email-notification-requested': false,
+    'mission-translate': true,
+    'mission-source-language': 'en',
+    'mission-target-language': 'zh',
+    'mission-file-list': [],
+  },
+  'split-params': {
+  },
+  'merge-params': {
+  },
+};
 export default {
   name: 'Home',
   data() {
@@ -44,12 +63,15 @@ export default {
     };
   },
   methods: {
-    getMessage() {
+    // eslint-disable-next-line camelcase,no-shadow
+    getMissionID(json_template) {
       const path = 'http://localhost:8000/getmissionid';
       axios.get(path)
         .then((res) => {
           console.log(res);
-          this.msg = res.data['mission-id'];
+          // eslint-disable-next-line no-param-reassign
+          json_template['mission-params']['mission-id'] = res.data['mission-id'];
+          console.log(json_template);
         })
         .catch((error) => {
           console.log(error);
@@ -57,7 +79,7 @@ export default {
     },
   },
   created() {
-    this.getMessage();
+    this.getMissionID(json_template);
   },
 };
 </script>
