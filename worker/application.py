@@ -21,6 +21,7 @@ s3_dest = "ready"
 s3_merge_dir = "merge"
 s3_split_dir = "split"
 
+
 @application.before_first_request
 def before_first_request():
     application.logger.info(f"===          First request received, welcome")
@@ -73,6 +74,7 @@ def execute_mission(json_request):
         if mission_id is not None:
             worker.clean_up(mission_id, os.path.join(file_dir, mission_id), finished_dir)
 
+
 @application.route("/process-mission", methods=["POST"])
 @decorators.router_wrapper
 def start_mission():
@@ -84,10 +86,6 @@ def start_mission():
     t.start()
 
     return "mission received", 200
-
-@application.route("/")
-def default():
-    return "hello budy"
 
 
 @application.route("/healthCheck")
