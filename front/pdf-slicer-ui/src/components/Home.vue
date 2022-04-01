@@ -45,7 +45,7 @@
           <input type="file" multiple
                  @change="handleFileChange($event)"
                  @submit="onSubmit()"
-                 @reset="onReset()"
+                 @reset.prevent="onReset()"
                  class="btn btn-primary btn-sms"
                  placeholder="Upload Files"/>
           <p>You have selected {{selectedFile}} files!</p>
@@ -101,6 +101,14 @@ export default {
     onReset() {
       this.selectedFile = 0;
     },
+    // post request to frontend server to create the directory
+    createMission_Dir() {
+
+    },
+    // upload files by frontend server
+    uploadFiles() {
+
+    },
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
       const path = 'http://localhost:8000/getmissionid';
@@ -116,7 +124,6 @@ export default {
           console.log(error);
         });
     },
-    // upload files by frontend server
   },
   created() {
     this.getMissionID(json_template);
