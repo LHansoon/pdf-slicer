@@ -7,16 +7,9 @@ import json
 import shortuuid
 import datetime
 import time
-import shutil
 
 # this is pymupdf
 import fitz
-
-def get_random_pdf_name():
-    uuid = shortuuid.uuid()
-    ts = time.time()
-    time_stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-    return f"{time_stamp}-{uuid}.pdf"
 
 
 def parse_new_job_json(job_params):
