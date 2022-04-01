@@ -2,9 +2,11 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-10">
-        <h1>Files</h1>
+        <h1>PDF-Slicer</h1>
         <hr><br><br>
-        <button type="button" class="btn btn-success btn-sm">Upload Files</button>
+        <button type="button" class="btn btn-success btn-sm"
+                @click="handleClickEvent()" v-b-modal.file-modal>
+          Upload Files</button>
         <hr>
         <button type="button" class="btn btn-success btn-sm">Download Files</button>
         <br><br>
@@ -16,8 +18,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>foo</td>
+            <tr v-for="(file, index) in files" :key="index">
+              <td>{{file.name}}</td>
               <td>
                 <div class="btn-group" role="group">
                   <button type="button" class="btn btn-danger btn-sm">Delete</button>
@@ -33,6 +35,25 @@
         </table>
       </div>
     </div>
+    <b-modal ref="uploadFileModal"
+            id="file-modal"
+            title="Upload Files"
+            hide-footer>
+      <!--UPLOAD-->
+      <b-form enctype="multipart/form-data">
+        <div class="dropbox">
+          <input type="file" multiple
+                 @change="handleFileChange($event)"
+                 @submit="onSubmit()"
+                 @reset="onReset()"
+                 class="btn btn-primary btn-sms"
+                 placeholder="Upload Files"/>
+          <p>You have selected {{selectedFile}} files!</p>
+          <b-button type="submit" class="btn btn-success btn-sm">Submit</b-button>
+          <b-button type="reset" class="btn btn-danger btn-sm">Reset</b-button>
+        </div>
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
@@ -59,10 +80,27 @@ export default {
   name: 'Home',
   data() {
     return {
-      msg: '',
+      selectedFile: 0,
+      files: [],
     };
   },
   methods: {
+    // This is for uploading modal when selecting files
+    handleFileChange(evt) {
+      this.selectedFile = evt.target.files.length;
+    },
+    // handle click event for upload button
+    handleClickEvent() {
+      this.selectedFile = 0;
+    },
+    // submit form
+    onSubmit() {
+
+    },
+    // reset form
+    onReset() {
+      this.selectedFile = 0;
+    },
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
       const path = 'http://localhost:8000/getmissionid';
@@ -71,12 +109,14 @@ export default {
           console.log(res);
           // eslint-disable-next-line no-param-reassign
           json_template['mission-params']['mission-id'] = res.data['mission-id'];
-          console.log(json_template);
+          // console.log(json_template);
+          this.files = json_template['mission-params']['mission-file-list'];
         })
         .catch((error) => {
           console.log(error);
         });
     },
+    // upload files by frontend server
   },
   created() {
     this.getMissionID(json_template);
