@@ -36,16 +36,17 @@
       </div>
     </div>
     <b-modal ref="uploadFileModal"
-            id="file-modal"
-            title="Upload Files"
+             id="file-modal"
+             title="Upload Files"
             hide-footer>
       <!--UPLOAD-->
-      <b-form enctype="multipart/form-data">
+      <b-form enctype="multipart/form-data"
+              @submit="onSubmit"
+              @reset="onReset">
         <div class="dropbox">
           <input type="file" multiple
+                 ref="uploadedFiles"
                  @change="handleFileChange($event)"
-                 @submit="onSubmit()"
-                 @reset.prevent="onReset()"
                  class="btn btn-primary btn-sms"
                  placeholder="Upload Files"/>
           <p>You have selected {{selectedFile}} files!</p>
@@ -88,39 +89,72 @@ export default {
     // This is for uploading modal when selecting files
     handleFileChange(evt) {
       this.selectedFile = evt.target.files.length;
+      // eslint-disable-next-line camelcase
+      const files_list = this.$refs.uploadedFiles.files;
+      // eslint-disable-next-line guard-for-in,no-restricted-syntax,no-plusplus
+      for (let i = 0; i < files_list.length; i++) {
+        this.files.push(files_list[i]);
+      }
     },
     // handle click event for upload button
     handleClickEvent() {
       this.selectedFile = 0;
     },
     // submit form
-    onSubmit() {
-
+    onSubmit(evt) {
+      evt.preventDefault();
+      const formData = new FormData();
+      this.files.forEach((file) => {
+        formData.append('file', file);
+      });
+      this.$refs.uploadFileModal.hide();
+      try {
+        // post request to the frontend server /upload
+        this.uploadFiles(formData);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
+      }
     },
     // reset form
-    onReset() {
+    onReset(evt) {
+      evt.preventDefault();
       this.selectedFile = 0;
     },
     // post request to frontend server to create the directory
-    createMission_Dir() {
-
+    // eslint-disable-next-line camelcase
+    createMission_Dir(mission_id) {
+      axios({
+        method: 'post',
+        url: 'http://localhost:3000/mkdir',
+        data: {
+          id: mission_id,
+        },
+      });
     },
     // upload files by frontend server
-    uploadFiles() {
-
+    uploadFiles(formData) {
+      axios({
+        method: 'post',
+        url: 'http://localhost:3000/upload',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
     },
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
       const path = 'http://localhost:8000/getmissionid';
       axios.get(path)
         .then((res) => {
-          console.log(res);
           // eslint-disable-next-line no-param-reassign
           json_template['mission-params']['mission-id'] = res.data['mission-id'];
-          // console.log(json_template);
           this.files = json_template['mission-params']['mission-file-list'];
+          this.createMission_Dir(res.data['mission-id']);
         })
         .catch((error) => {
+          // eslint-disable-next-line no-console
           console.log(error);
         });
     },
