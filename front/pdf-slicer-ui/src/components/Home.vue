@@ -4,6 +4,7 @@
       <div class="col-sm-10">
         <h1>PDF-Slicer</h1>
         <hr><br><br>
+        <alert :message=message v-if="showMessage"></alert>
         <button type="button" class="btn btn-success btn-sm"
                 @click="handleClickEvent()" v-b-modal.file-modal>
           Upload Files</button>
@@ -22,7 +23,9 @@
               <td>{{file.name}}</td>
               <td>
                 <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                  <button type="button"
+                          class="btn btn-danger btn-sm"
+                          @click="onDeleteFile(file)">Delete</button>
                 </div>
               </td>
             </tr>
@@ -60,6 +63,7 @@
 
 <script>
 import axios from 'axios';
+import Alert from './Alert.vue';
 
 // eslint-disable-next-line camelcase
 const json_template = {
@@ -83,6 +87,8 @@ export default {
     return {
       selectedFile: 0,
       files: [],
+      message: '',
+      showMessage: false,
     };
   },
   methods: {
@@ -95,7 +101,6 @@ export default {
       for (let i = 0; i < files_list.length; i++) {
         this.files.push(files_list[i]);
       }
-      console.log(this.files);
     },
     // handle click event for upload button
     handleClickEvent() {
@@ -146,11 +151,10 @@ export default {
         if (res.data.upload_status === 'Upload File!') {
           // eslint-disable-next-line no-plusplus
           for (let i = 0; i < this.files.length; i++) {
-            // eslint-disable-next-line camelcase
-            const name_str = this.files[i].name;
-            // eslint-disable-next-line camelcase
-            json_template['mission-params']['mission-file-list'][i] = name_str;
+            json_template['mission-params']['mission-file-list'][i] = this.files[i].name;
           }
+          this.message = 'Files Uploaded!';
+          this.showMessage = true;
         }
       });
     },
@@ -168,6 +172,36 @@ export default {
           console.log(error);
         });
     },
+    // delete uploaded files
+    deleteFile(fileName) {
+      axios({
+        method: 'post',
+        url: 'http://localhost:3000/delete',
+        data: {
+          deleteName: fileName,
+        },
+      }).then((res) => {
+        if (res.data.delete_status === 'Delete!') {
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < this.files.length; i++) {
+            if (this.files[i].name === fileName) {
+              this.files.splice(i, 1);
+              console.log(i);
+            }
+          }
+          console.log(this.files);
+          this.message = 'Files Removed!';
+          this.showMessage = true;
+        }
+      });
+    },
+    onDeleteFile(file) {
+      this.deleteFile(file.name);
+    },
+  },
+  components: {
+    // eslint-disable-next-line vue/no-unused-components
+    alert: Alert,
   },
   created() {
     this.getMissionID(json_template);

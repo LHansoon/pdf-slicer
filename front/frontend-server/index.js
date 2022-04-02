@@ -49,4 +49,11 @@ app.post('/upload',function (req,res,next) {
     res.json({upload_status: 'Upload File!'});
 });
 
+// delete file
+app.post('/delete',function (req,res){
+    let file_loc = './upload/' + mission_id + '/' + req.body.deleteName;
+    fs.unlink(file_loc,()=>{
+        res.json({delete_status:'Delete!'});
+    });
+});
 app.listen(port, ()=>{console.log(`Server listening on port ${port}`)});
