@@ -95,6 +95,7 @@ export default {
       for (let i = 0; i < files_list.length; i++) {
         this.files.push(files_list[i]);
       }
+      console.log(this.files);
     },
     // handle click event for upload button
     handleClickEvent() {
@@ -141,6 +142,16 @@ export default {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+      }).then((res) => {
+        if (res.data.upload_status === 'Upload File!') {
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < this.files.length; i++) {
+            // eslint-disable-next-line camelcase
+            const name_str = this.files[i].name;
+            // eslint-disable-next-line camelcase
+            json_template['mission-params']['mission-file-list'][i] = name_str;
+          }
+        }
       });
     },
     // eslint-disable-next-line camelcase,no-shadow
@@ -150,7 +161,6 @@ export default {
         .then((res) => {
           // eslint-disable-next-line no-param-reassign
           json_template['mission-params']['mission-id'] = res.data['mission-id'];
-          this.files = json_template['mission-params']['mission-file-list'];
           this.createMission_Dir(res.data['mission-id']);
         })
         .catch((error) => {

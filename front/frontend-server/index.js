@@ -46,7 +46,7 @@ app.post('/upload',function (req,res,next) {
             console.log('done');
         });
     });
-    res.json({upload_status: 'Upload File'});
+    res.json({upload_status: 'Upload File!'});
 });
 
 app.listen(port, ()=>{console.log(`Server listening on port ${port}`)});
