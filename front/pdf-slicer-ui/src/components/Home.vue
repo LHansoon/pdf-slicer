@@ -41,7 +41,9 @@
                   <button type="button"
                           class="btn btn-secondary btn-sm"
                           v-b-modal.translate-modal>Translate</button>
-                  <button type="button" class="btn btn-info btn-sm">Start Processing</button>
+                  <button type="button"
+                          class="btn btn-info btn-sm"
+                          v-b-modal.processing-modal>Start Processing</button>
           </div>
           </tbody>
         </table>
@@ -245,6 +247,23 @@
           </div>
         </div>
     </b-modal>
+    <!--Processing-->
+    <b-modal ref="processingModal"
+             id="processing-modal"
+             title="Enter Your Email"
+             size="xl"
+            hide-footer>
+      <b-form enctype="multipart/form-data"
+              @submit="onStartProcessing">
+        <p>Do you want to be notified via email?</p>
+        <div class="input-group">
+          <input type="text"
+                 @change = "onHandleEmail"
+                 placeholder="Please Enter your Email..."/>
+        </div>
+        <b-button type="submit" class="btn btn-success btn-sm">Submit</b-button>
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
@@ -294,21 +313,23 @@ export default {
   data() {
     return {
       merge_split: {
+        merge_task_no: 0,
         merge_counter: 0,
         files: [],
         pool: [],
         inProgress: [],
         merge_inputs: [],
-        merge_task: [],
-        merge_task_all: [],
+        merge_task: {},
+        merge_task_all: {},
         split_counter: 0,
         split_inputs: [],
-        split_task: [],
+        split_task: {},
       },
       translate: {
         source_selected: '',
         target_selected: '',
       },
+      email: '',
       selectedFile: 0,
       message: '',
       showMessage: false,
@@ -327,6 +348,7 @@ export default {
     },
     // handle click event for upload button
     handleClickEvent() {
+      this.getMissionID(json_template);
       this.selectedFile = 0;
     },
     // submit form
@@ -465,7 +487,7 @@ export default {
         },
       }).then((res) => {
         if (res.data.save_status === 'Merge Saved!') {
-          this.merge_split.merge_task.push(res.data.save_data);
+          this.merge_split.merge_task[this.merge_split.merge_counter] = res.data.save_data;
           this.merge_split.merge_counter += 1;
           this.merge_split.merge_inputs = [];
         }
@@ -473,9 +495,10 @@ export default {
     },
     onFinishSetting() {
       this.$refs.mergeModal.hide();
-      this.merge_split.merge_task_all.push(this.merge_split.merge_task);
+      this.merge_split.merge_task_all[this.merge_split.merge_task_no] = this.merge_split.merge_task;
+      this.merge_split.merge_task_no += 1;
       this.merge_split.merge_counter = 0;
-      this.merge_split.merge_task = [];
+      this.merge_split.merge_task = {};
       this.message = 'Merging Mission Added!';
       this.showMessage = true;
     },
@@ -494,12 +517,18 @@ export default {
         method: 'post',
         url: 'http://localhost:3000/split_save',
         data: {
-          taskFile: this.merge_split.inProgress[this.merge_split.split_counter].name,
           taskInput: this.merge_split.split_inputs,
         },
       }).then((res) => {
         if (res.data.save_status === 'Split Saved!') {
-          this.merge_split.split_task.push(res.data.save_data);
+          json_template['split-params'][this.merge_split.inProgress[this.merge_split.split_counter].name] = [];
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < this.merge_split.split_inputs.length; i++) {
+            json_template['split-params'][this.merge_split.inProgress[this.merge_split.split_counter].name].push({
+              // eslint-disable-next-line radix
+              'part-id': i, from: parseInt(res.data.save_data_from[0][i]), to: parseInt(res.data.save_data_to[0][i]),
+            });
+          }
           this.merge_split.split_counter += 1;
           this.merge_split.split_inputs = [];
         }
@@ -511,9 +540,20 @@ export default {
       this.message = 'Splitting Mission Added!';
       this.showMessage = true;
     },
-    onStartProcessing() {
+    onStartProcessing(evt) {
+      evt.preventDefault();
+      this.$refs.processingModal.hide();
+      json_template['mission-params']['mission-requester-email'] = this.email;
+      json_template['mission-params']['mission-email-notification-requested'] = true;
       json_template['merge-params'] = this.merge_split.merge_task_all;
       json_template['split-params'] = this.merge_split.split_task;
+      axios({
+        method: 'post',
+        url: 'http://localhost:3000/debug',
+        data: {
+          json_str: json_template,
+        },
+      });
     },
     onSubmitTranslate(evt) {
       evt.preventDefault();
@@ -522,9 +562,11 @@ export default {
       json_template['mission-params']['mission-source-language'] = this.translate.source_selected;
       json_template['mission-params']['mission-target-language'] = this.translate.target_selected;
     },
+    onHandleEmail(evt) {
+      this.email = evt.target.value;
+    },
   },
   created() {
-    this.getMissionID(json_template);
   },
 };
 </script>
