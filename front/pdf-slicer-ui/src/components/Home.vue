@@ -32,9 +32,15 @@
           <div class="btn-group" role="group">
                   <button type="button"
                           class="btn btn-warning btn-sm"
-                          @click="onMerge()"
+                          @click="onMerge_Split"
                           v-b-modal.merge-modal>Merge</button>
-                  <button type="button" class="btn btn-dark btn-sm">Split</button>
+                  <button type="button"
+                          class="btn btn-dark btn-sm"
+                          @click="onMerge_Split"
+                          v-b-modal.split-modal>Split</button>
+                  <button type="button"
+                          class="btn btn-secondary btn-sm"
+                          v-b-modal.translate-modal>Translate</button>
                   <button type="button" class="btn btn-info btn-sm">Start Processing</button>
           </div>
           </tbody>
@@ -91,7 +97,7 @@
             </div>
             <div class="col mx-2 px-2 py-3 bg-light border rounded">
               <h6>Settings</h6>
-              <div id="app">
+              <div id="merge_app">
                 <div v-for="(progress, i) in merge_split.inProgress"
                      :key="i">
                   <p v-if="i===merge_split.merge_counter">
@@ -124,6 +130,121 @@
           </div>
         </div>
     </b-modal>
+    <!--Split-->
+    <b-modal static ref="splitModal"
+             id="split-modal"
+             title="Split Settings"
+             size="xl"
+            hide-footer>
+        <div class="container mt-5 mb-5">
+          <div class="row">
+            <div class="col mx-2 px-2 py-3 bg-light border rounded">
+              <h6>File Pool</h6>
+              <draggable class="draggable-list" :list="merge_split.pool" group="merge_split">
+                <div v-for="(file, i) in merge_split.pool" :key="i">
+                  <div class="bg-white mt-3 p-2 shadow border rounded">
+                    <p>{{ file.name }}</p>
+                  </div>
+                </div>
+              </draggable>
+            </div>
+            <div class="col mx-2 px-2 py-3 bg-light border rounded">
+              <h6>In Progress</h6>
+              <draggable class="draggable-list" :list="merge_split.inProgress" group="merge_split">
+                <div v-for="(progress, i) in merge_split.inProgress" :key="i">
+                  <div class="bg-white mt-3 p-2 shadow border rounded">
+                    <p>{{ progress.name }}</p>
+                  </div>
+                </div>
+              </draggable>
+            </div>
+            <div class="col mx-2 px-2 py-3 bg-light border rounded">
+              <h6>Settings</h6>
+              <div id="split_app">
+                <div v-for="(progress, i) in merge_split.inProgress"
+                     :key="i">
+                  <p v-if="i===merge_split.split_counter">
+                    {{progress.name}}</p>
+                </div>
+                <b-form @submit="onSaveSplit">
+                  <ul>
+                    <li v-for="(input, index) in merge_split.split_inputs" :key ="index">
+                      <input type="text"
+                             v-model="input.from"
+                             class = "input-group">-
+                      <input type="text"
+                             v-model="input.to"
+                             class = "input-group">
+                      <button @click="deleteRow(index,merge_split.split_inputs)"
+                              class = "btn btn-outline-danger btn-sm">Delete</button>
+                    </li>
+                  </ul>
+                  <button type="button"
+                          @click="addRow(merge_split.split_inputs)"
+                          class = "btn btn-outline-primary btn-sm">Add Setting</button>
+                  <button type="submit"
+                          class = "btn btn-outline-success btn-sm">Save</button>
+                  <button type="button"
+                          @click="onFinishSettingSplit"
+                          class = "btn btn-success btn-sm">Finish Setting</button>
+                </b-form>
+              </div>
+            </div>
+          </div>
+        </div>
+    </b-modal>
+    <!--Translate-->
+    <b-modal static ref="translateModal"
+             id="translate-modal"
+             title="Translate Settings"
+             size="xl"
+            hide-footer>
+        <div class="container mt-5 mb-5">
+          <div class="row">
+            <form @submit = "onSubmitTranslate">
+              <div class="col mx-2 px-2 py-3 bg-light border rounded">
+                <h6>Source Language</h6>
+                  <select v-model="translate.source_selected">
+                    <option disabled value="">Please select one</option>
+                    <option value="en">en</option>
+                    <option value="ar">ar</option>
+                    <option value="cs">cs</option>
+                    <option value="de">de</option>
+                    <option value="es">es</option>
+                    <option value="fr">fr</option>
+                    <option value="it">it</option>
+                    <option value="ja">ja</option>
+                    <option value="pt">pt</option>
+                    <option value="ru">ru</option>
+                    <option value="tr">tr</option>
+                    <option value="zh">zh</option>
+                    <option value="zh-TW">zh-TW</option>
+                  </select>
+              </div>
+              <div class="col mx-2 px-2 py-3 bg-light border rounded">
+                <h6>Target Language</h6>
+                  <select v-model="translate.target_selected">
+                    <option disabled value="">Please select one</option>
+                    <option value="en">en</option>
+                    <option value="ar">ar</option>
+                    <option value="cs">cs</option>
+                    <option value="de">de</option>
+                    <option value="es">es</option>
+                    <option value="fr">fr</option>
+                    <option value="it">it</option>
+                    <option value="ja">ja</option>
+                    <option value="pt">pt</option>
+                    <option value="ru">ru</option>
+                    <option value="tr">tr</option>
+                    <option value="zh">zh</option>
+                  </select>
+              </div>
+              <button type="submit"
+                      class = "btn btn-outline-success btn-sm">Submit</button>
+            </form>
+          </div>
+        </div>
+    </b-modal>
   </div>
 </template>
 
@@ -153,15 +274,15 @@ const json_template = {
     'mission-id': '',
     'mission-requester-email': '',
     'mission-email-notification-requested': false,
-    'mission-translate': true,
-    'mission-source-language': 'en',
-    'mission-target-language': 'zh',
+    'mission-translate': false,
+    'mission-source-language': '',
+    'mission-target-language': '',
     'mission-file-list': [],
   },
   'split-params': {
   },
-  'merge-params': {
-  },
+  'merge-params': [
+  ],
 };
 export default {
   name: 'Home',
@@ -180,6 +301,13 @@ export default {
         merge_inputs: [],
         merge_task: [],
         merge_task_all: [],
+        split_counter: 0,
+        split_inputs: [],
+        split_task: [],
+      },
+      translate: {
+        source_selected: '',
+        target_selected: '',
       },
       selectedFile: 0,
       message: '',
@@ -296,7 +424,7 @@ export default {
       this.deleteFile(file.name);
     },
     // triggered when merge button is hit
-    onMerge() {
+    onMerge_Split() {
       // eslint-disable-next-line no-plusplus
       for (let i = 0; i < this.merge_split.files.length; i++) {
         this.merge_split.pool[i] = this.merge_split.files[i];
@@ -348,9 +476,51 @@ export default {
       this.merge_split.merge_task_all.push(this.merge_split.merge_task);
       this.merge_split.merge_counter = 0;
       this.merge_split.merge_task = [];
+      this.message = 'Merging Mission Added!';
+      this.showMessage = true;
+    },
+    onSaveSplit(evt) {
+      evt.preventDefault();
+      try {
+        // post request to the frontend server /upload
+        this.saveSplitSetting();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
+      }
+    },
+    saveSplitSetting() {
+      axios({
+        method: 'post',
+        url: 'http://localhost:3000/split_save',
+        data: {
+          taskFile: this.merge_split.inProgress[this.merge_split.split_counter].name,
+          taskInput: this.merge_split.split_inputs,
+        },
+      }).then((res) => {
+        if (res.data.save_status === 'Split Saved!') {
+          this.merge_split.split_task.push(res.data.save_data);
+          this.merge_split.split_counter += 1;
+          this.merge_split.split_inputs = [];
+        }
+      });
+    },
+    onFinishSettingSplit() {
+      this.$refs.splitModal.hide();
+      this.merge_split.split_counter = 0;
+      this.message = 'Splitting Mission Added!';
+      this.showMessage = true;
     },
     onStartProcessing() {
       json_template['merge-params'] = this.merge_split.merge_task_all;
+      json_template['split-params'] = this.merge_split.split_task;
+    },
+    onSubmitTranslate(evt) {
+      evt.preventDefault();
+      this.$refs.translateModal.hide();
+      json_template['mission-params']['mission-translate'] = true;
+      json_template['mission-params']['mission-source-language'] = this.translate.source_selected;
+      json_template['mission-params']['mission-target-language'] = this.translate.target_selected;
     },
   },
   created() {

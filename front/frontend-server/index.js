@@ -71,15 +71,38 @@ app.post('/merge_save',function (req, res){
         task_setting_from[i] = task_Input[i].from;
         task_setting_to[i] = task_Input[i].to;
       }
-    merge_task_setting = '"'+ task_no + '":{"file-name":' + '"' + task_file + '"'
-    +',"inner-merge-order":{';
+    merge_task_setting = '"'+ task_no + '": {"file-name": ' + '"' + task_file + '"'
+    +', "inner-merge-order": {';
     for (let i = 0; i < task_Input.length; i++){
         let str_i = i.toString();
-        merge_task_setting += '"' + str_i + '"' + ':{"from":' + task_setting_from[i] +
-            ',"to":' + task_setting_to[i] + '},'
+        merge_task_setting += '"' + str_i + '"' + ': {"from":' + task_setting_from[i] +
+            ', "to": ' + task_setting_to[i] + '},'
     }
     merge_task_setting = merge_task_setting.slice(0,-1);
     merge_task_setting += '}}';
     res.json({save_status: 'Merge Saved!', save_data: {merge_task_setting}});
+});
+
+// save setting for split
+app.post('/split_save',function (req, res){
+    let split_task_setting = '';
+    let task_file = '';
+    let task_Input = req.body.taskInput;
+    let task_setting_from = [];
+    let task_setting_to = [];
+    task_file = req.body.taskFile;
+    for (let i = 0; i < task_Input.length; i++) {
+        task_setting_from[i] = task_Input[i].from;
+        task_setting_to[i] = task_Input[i].to;
+      }
+    split_task_setting = '"' + task_file + '": ' + ' [';
+    for (let i = 0; i < task_Input.length; i++){
+        let str_i = i.toString();
+        split_task_setting += '{"part-id": ' + str_i + ', "from": ' + task_setting_from[i] +
+            ', "to": ' + task_setting_to[i] + '},'
+    }
+    split_task_setting = split_task_setting.slice(0,-1);
+    split_task_setting += ']';
+    res.json({save_status: 'Split Saved!', save_data: {split_task_setting}});
 });
 app.listen(port, ()=>{console.log(`Server listening on port ${port}`)});
