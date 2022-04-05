@@ -7,6 +7,7 @@ import shortuuid
 import shutil
 
 from flask import Flask, request
+
 from decorators import exception_holder
 from flask_cors import CORS
 
@@ -14,7 +15,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 # enable CORS
-CORS(app, resources={r'/*': {'origins': '*'}})
+CORS(app, resources={r'/*': {'origins': '*'}}, supports_credentials=True)
 
 FILE_UPLOAD_LOC = "upload"
 S3_BKT = "pdf-slicer"
@@ -60,7 +61,9 @@ def post_request():
     for file in file_list:
         if file not in uploaded_list:
             app.logger.info(f"{mission_id} - failed, list not matching")
-            return {"request-status": "fail", "Message": "file list not matching uploaded files"}, 200
+            response = Flask.jsonify({"request-status": "fail", "Message": "file list not matching uploaded files"})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
 
     s3_bkt = session.resource("s3").Bucket(S3_BKT)
     for file in file_list:
@@ -81,8 +84,9 @@ def post_request():
         MessageBody=json.dumps(json_request)
     )
     app.logger.info(f"{mission_id} - sqs mission created")
-
-    return {"request-status": "success", "Message": "request good"}, 200
+    response = Flask.jsonify({"request-status": "success", "Message": "request good"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 
 def generate_mission_id():
