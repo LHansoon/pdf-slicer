@@ -65,6 +65,7 @@
     <b-modal static ref="mergeModal"
              id="merge-modal"
              title="Merge Settings"
+             size="xl"
             hide-footer>
         <div class="container mt-5 mb-5">
           <div class="row">
