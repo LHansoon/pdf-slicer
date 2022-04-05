@@ -553,12 +553,9 @@ export default {
       this.$refs.processingModal.hide();
       json_template['mission-params']['mission-requester-email'] = this.email;
       json_template['mission-params']['mission-email-notification-requested'] = true;
-      axios({
-        method: 'post',
-        url: 'http://localhost:3000/debug',
-        data: {
-          json_str: json_template,
-        },
+      const path = 'http://localhost:8000/postrequest';
+      axios.post(path, json_template).then((res) => {
+        console.log(res);
       });
     },
     onSubmitTranslate(evt) {
