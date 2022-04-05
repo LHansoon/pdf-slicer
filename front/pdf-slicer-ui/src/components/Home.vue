@@ -481,13 +481,21 @@ export default {
         method: 'post',
         url: 'http://localhost:3000/merge_save',
         data: {
-          taskNum: this.merge_split.merge_counter,
-          taskFile: this.merge_split.inProgress[this.merge_split.merge_counter].name,
           taskInput: this.merge_split.merge_inputs,
         },
       }).then((res) => {
         if (res.data.save_status === 'Merge Saved!') {
-          this.merge_split.merge_task[this.merge_split.merge_counter] = res.data.save_data;
+          this.merge_split.merge_task[this.merge_split.merge_counter] = {
+            'file-name': this.merge_split.inProgress[this.merge_split.merge_counter].name,
+            'inner-merge-order': {},
+          };
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < this.merge_split.merge_inputs.length; i++) {
+            this.merge_split.merge_task[this.merge_split.merge_counter]['inner-merge-order'][i] = {
+              // eslint-disable-next-line radix,max-len
+              from: parseInt(res.data.save_data_from[0][i]), to: parseInt(res.data.save_data_to[0][i]),
+            };
+          }
           this.merge_split.merge_counter += 1;
           this.merge_split.merge_inputs = [];
         }
@@ -495,7 +503,7 @@ export default {
     },
     onFinishSetting() {
       this.$refs.mergeModal.hide();
-      this.merge_split.merge_task_all[this.merge_split.merge_task_no] = this.merge_split.merge_task;
+      json_template['merge-params'].push(this.merge_split.merge_task);
       this.merge_split.merge_task_no += 1;
       this.merge_split.merge_counter = 0;
       this.merge_split.merge_task = {};
@@ -545,8 +553,6 @@ export default {
       this.$refs.processingModal.hide();
       json_template['mission-params']['mission-requester-email'] = this.email;
       json_template['mission-params']['mission-email-notification-requested'] = true;
-      json_template['merge-params'] = this.merge_split.merge_task_all;
-      json_template['split-params'] = this.merge_split.split_task;
       axios({
         method: 'post',
         url: 'http://localhost:3000/debug',

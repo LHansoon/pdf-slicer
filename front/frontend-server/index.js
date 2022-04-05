@@ -59,28 +59,14 @@ app.post('/delete',function (req,res){
 
 // save setting for merge
 app.post('/merge_save',function (req, res){
-    let merge_task_setting = '';
-    let task_no = '';
-    let task_file = '';
     let task_Input = req.body.taskInput;
     let task_setting_from = [];
     let task_setting_to = [];
-    task_no = req.body.taskNum.toString();
-    task_file = req.body.taskFile;
     for (let i = 0; i < task_Input.length; i++) {
         task_setting_from[i] = task_Input[i].from;
         task_setting_to[i] = task_Input[i].to;
       }
-    merge_task_setting = '"'+ task_no + '": {"file-name": ' + '"' + task_file + '"'
-    +', "inner-merge-order": {';
-    for (let i = 0; i < task_Input.length; i++){
-        let str_i = i.toString();
-        merge_task_setting += '"' + str_i + '"' + ': {"from":' + task_setting_from[i] +
-            ', "to": ' + task_setting_to[i] + '},'
-    }
-    merge_task_setting = merge_task_setting.slice(0,-1);
-    merge_task_setting += '}}';
-    res.json({save_status: 'Merge Saved!', save_data: [merge_task_setting]});
+    res.json({save_status: 'Merge Saved!', save_data_from: [task_setting_from], save_data_to: [task_setting_to]});
 });
 
 // save setting for split
@@ -97,5 +83,6 @@ app.post('/split_save',function (req, res){
 
 app.post('/debug',function (req,res){
    console.log(JSON.stringify(req.body.json_str));
+   console.log(req.body.json_str);
 });
 app.listen(port, ()=>{console.log(`Server listening on port ${port}`)});
