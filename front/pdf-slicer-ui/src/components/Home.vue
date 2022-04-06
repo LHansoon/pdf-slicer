@@ -407,7 +407,7 @@ export default {
     // get Mission ID before mounting
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
-      const path = 'http://localhost:3000/getmissionid';
+      const path = `http://${process.env.VUE_APP_express_host}:3000/getmissionid`;
       axios.get(path)
         .then((res) => {
           // eslint-disable-next-line no-param-reassign
