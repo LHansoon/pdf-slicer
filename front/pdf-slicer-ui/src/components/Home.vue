@@ -2,14 +2,17 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-10">
-        <h1>PDF-Slicer</h1>
+        <h1>PDF-Processor</h1>
         <hr><br><br>
         <alert :message=message v-if="showMessage"></alert>
         <button type="button" class="btn btn-success btn-sm"
                 @click="handleClickEvent()" v-b-modal.file-modal>
           Upload Files</button>
         <hr>
-        <button type="button" class="btn btn-success btn-sm">Download Files</button>
+        <!--Download Link shows up here-->
+        <div id="'download" v-if="download.download_status==='Ready!'">
+          <a v-bind:href="download.URL">Please Click Here to Download Processed File!</a>
+        </div>
         <br><br>
         <table class="table table-hover">
           <thead>
@@ -262,6 +265,9 @@
                  placeholder="Please Enter your Email..."/>
         </div>
         <b-button type="submit" class="btn btn-success btn-sm">Submit</b-button>
+        <b-button type="button"
+                  class="btn btn-danger btn-sm"
+                  @click="onRefuse">No,Thanks</b-button>
       </b-form>
     </b-modal>
   </div>
@@ -329,7 +335,14 @@ export default {
         source_selected: '',
         target_selected: '',
       },
-      email: '',
+      email: {
+        email_addr: '',
+        email_set: false,
+      },
+      download: {
+        download_status: '',
+        URL: '',
+      },
       selectedFile: 0,
       message: '',
       showMessage: false,
@@ -385,7 +398,6 @@ export default {
     },
     // upload files by frontend server
     uploadFiles(formData) {
-      console.log(`http://${process.env.VUE_APP_express_host}/upload`);
       axios({
         method: 'post',
         url: `http://${process.env.VUE_APP_express_host}/upload`,
@@ -552,11 +564,16 @@ export default {
     onStartProcessing(evt) {
       evt.preventDefault();
       this.$refs.processingModal.hide();
-      json_template['mission-params']['mission-requester-email'] = this.email;
-      json_template['mission-params']['mission-email-notification-requested'] = true;
+      if (this.email.email_set === true) {
+        json_template['mission-params']['mission-requester-email'] = this.email.email_addr;
+      }
+      json_template['mission-params']['mission-email-notification-requested'] = this.email.email_set;
       const path = `http://${process.env.VUE_APP_express_host}/postrequest`;
       axios.post(path, json_template).then((res) => {
-        console.log(res);
+        if (res.data.download_status === 'Ready!') {
+          this.download.download_status = 'Ready!';
+          this.download.URL = res.data.link;
+        }
       });
     },
     onSubmitTranslate(evt) {
@@ -567,7 +584,12 @@ export default {
       json_template['mission-params']['mission-target-language'] = this.translate.target_selected;
     },
     onHandleEmail(evt) {
-      this.email = evt.target.value;
+      this.email.email_addr = evt.target.value;
+    },
+    onRefuse(evt) {
+      this.$refs.processingModal.hide();
+      this.email.email_set = false;
+      this.onStartProcessing(evt);
     },
   },
   created() {

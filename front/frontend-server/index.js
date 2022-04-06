@@ -20,7 +20,22 @@ app.use(
 
 
 let mission_id = '';
-
+let download_status = '';
+function wait_request(){
+    const server_download_Options = {
+        uri: `http://${process.env.VUE_APP_flask_host}/getresult`,
+        method: 'GET',
+    };
+    request(server_download_Options,function (error_wait,response_wait){
+        if (error_wait){
+            console.log(error_wait);
+        }
+        else{
+            download_status = response_wait.body['request-status'];
+        }
+    });
+    return download_status;
+}
 //get mission id by sending the request to the flask backend server
 app.get('/getmissionid',function (req, res){
     // send to flask server to get the mission id back
@@ -102,14 +117,43 @@ app.post('/split_save',function (req, res){
 //post request to flask backend server
 app.post('/postrequest',function (req, res){
 
-    var server_post_Options = {
+    const server_post_Options = {
         uri: `http://${process.env.VUE_APP_flask_host}/postrequest`,
         method: 'POST',
         json: req.body
-    }
+    };
     request(server_post_Options,function (error,response){
-        console.log(response.body)
-        console.log(typeof response.body)
+        // determine whether to send request to obtain the downloaded link
+        if(error){
+            console.log(error);
+        }
+        else if(response.body['request-status'] === 'success') {
+            // send another set of requests to keep asking whether the download is available
+            // This will stop when the link is returned with status 'ready'
+            let interval = setInterval(wait_request(), 5000);
+            if (download_status === 'success') {
+                clearInterval(interval);
+                const download_Options = {
+                    uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
+                    method: 'GET',
+                };
+                request(download_Options, function (error_download, response_download) {
+                    // determine whether to send request to obtain the downloaded link
+                    if (error_download) {
+                        console.log(error_download);
+                    }
+                    else if(response_download.body['request-status'] === 'success'){
+                        res.json({link:response_download.body['download-link'], download_status: 'Ready!'});
+                    }
+                    else{
+                        console.log(response_download.body['Message']);
+                    }
+                });
+            }
+        }
+        else{
+            res.json({'internal error with request': 500});
+        }
         res.json({status: response.body['request-status']});
     });
 });

@@ -102,7 +102,7 @@ def get_mission_id():
 
 @exception_holder
 @app.route("/getdownloadlink", methods=["GET"])
-def get_mission_id():
+def get_download_link():
     request_args = request.args
 
     try:
