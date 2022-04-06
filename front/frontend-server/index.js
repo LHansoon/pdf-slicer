@@ -130,9 +130,9 @@ app.post('/postrequest',function (req, res){
         else if(response.body['request-status'] === 'success') {
             // send another set of requests to keep asking whether the download is available
             // This will stop when the link is returned with status 'ready'
-            let interval = setInterval(() => wait_request(), 5000);
+            this.interval = setInterval(() => wait_request(), 5000);
             if (download_status === 'success') {
-                clearInterval(interval);
+                clearInterval(this.interval);
                 const download_Options = {
                     uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
                     method: 'GET',
