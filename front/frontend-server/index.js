@@ -3,6 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const bodyParser = require('body-parser')
 const busboy = require('connect-busboy');
+const request = require('request');
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,15 @@ app.use(
 
 
 let mission_id = '';
+
+//get mission id by sending the request to the flask backend server
+app.get('/getmissionid',function (req, res){
+    // send to flask server to get the mission id back
+    request('http://localhost:8000/getmissionid',function (error,response){
+        res.json({missionID: JSON.parse(response.body)['mission-id']});
+    });
+});
+
 //make directory when launch the server
 app.post('/mkdir',(req,res)=>{
     mission_id = req.body.id;
@@ -80,6 +90,13 @@ app.post('/split_save',function (req, res){
     res.json({save_status: 'Split Saved!', save_data_from: [task_setting_from], save_data_to: [task_setting_to]});
 });
 
+//post request to flask backend server
+app.post('/postrequest',function (req, res){
+    // send to flask server to get the mission id back
+    request('http://localhost:8000/postrequest',function (error,response){
+        res.json({status: JSON.parse(response.body)['request-status']});
+    });
+});
 app.post('/debug',function (req,res){
    console.log(JSON.stringify(req.body.json_str));
    console.log(req.body.json_str);

@@ -407,12 +407,12 @@ export default {
     // get Mission ID before mounting
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
-      const path = 'http://localhost:8000/getmissionid';
+      const path = 'http://localhost:3000/getmissionid';
       axios.get(path)
         .then((res) => {
           // eslint-disable-next-line no-param-reassign
-          json_template['mission-params']['mission-id'] = res.data['mission-id'];
-          this.createMission_Dir(res.data['mission-id']);
+          json_template['mission-params']['mission-id'] = res.data.missionID;
+          this.createMission_Dir(res.data.missionID);
         })
         .catch((error) => {
           // eslint-disable-next-line no-console
@@ -553,7 +553,7 @@ export default {
       this.$refs.processingModal.hide();
       json_template['mission-params']['mission-requester-email'] = this.email;
       json_template['mission-params']['mission-email-notification-requested'] = true;
-      const path = 'http://localhost:8000/postrequest';
+      const path = `http://${process.env.VUE_APP_express_host}:3000/postrequest`;
       axios.post(path, json_template).then((res) => {
         console.log(res);
       });
