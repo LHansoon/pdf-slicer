@@ -9,6 +9,8 @@ services:
       - type: bind
         source: ./
         target: /app/upload
+    env_file:
+      - front-docker.env
   express:
     image: pdf-frontend-express
     container_name: express
@@ -16,6 +18,8 @@ services:
       - type: bind
         source: ./
         target: /usr/src/app/upload
+    env_file:
+      - front-docker.env
   flask:
     image: pdf-backend
     container_name: flask
@@ -25,3 +29,5 @@ services:
       - type: bind
         source: ./
         target: /work/upload
+    env_file:
+      - front-docker.env
