@@ -10,6 +10,10 @@
           Upload Files</button>
         <hr>
         <!--Download Link shows up here-->
+        <div class="d-flex align-items-center" v-if="download.loading===true">
+          <strong>Loading...</strong>
+          <b-spinner class="ml-auto"></b-spinner>
+        </div>
         <div id="'download" v-if="download.download_status==='Ready!'">
           <a v-bind:href="download.URL">Please Click Here to Download Processed File!</a>
         </div>
@@ -342,6 +346,7 @@ export default {
       download: {
         download_status: '',
         URL: '',
+        loading: false,
       },
       selectedFile: 0,
       message: '',
@@ -570,8 +575,10 @@ export default {
       }
       json_template['mission-params']['mission-email-notification-requested'] = this.email.email_set;
       const path = `http://${process.env.VUE_APP_express_host}/postrequest`;
+      this.download.loading = true;
       axios.post(path, json_template).then((res) => {
         if (res.data.download_status === 'Ready!') {
+          this.download.loading = false;
           this.download.download_status = 'Ready!';
           this.download.URL = res.data.link;
         }

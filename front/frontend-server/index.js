@@ -130,7 +130,9 @@ app.post('/postrequest',function (req, res){
         else if(response.body['request-status'] === 'success') {
             // send another set of requests to keep asking whether the download is available
             // This will stop when the link is returned with status 'ready'
-            let interval = setInterval(wait_request(), 5000);
+            let interval = setInterval(wait_request(), 5000, (err)=>{
+                console.log(err);
+            });
             if (download_status === 'success') {
                 clearInterval(interval);
                 const download_Options = {
