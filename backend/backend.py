@@ -21,6 +21,8 @@ FILE_UPLOAD_LOC = "upload"
 S3_BKT = "pdf-slicer"
 S3_UPLOAD_TARGET = "source"
 
+S3_DOWNLOAD_TARGET = "ready"
+
 
 def get_session():
     return boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
@@ -97,6 +99,20 @@ def generate_mission_id():
 def get_mission_id():
     mission_id = generate_mission_id()
     return {"mission-id": mission_id, "request-status": "success", "Message": "request good"}, 200
+
+@exception_holder
+@app.route("/getdownloadlink", methods=["GET"])
+def get_mission_id():
+    request_args = request.args
+
+    try:
+        mission_id = request_args["mission-id"]
+
+        url = f"https://{S3_BKT}.s3.amazonaws.com/{S3_DOWNLOAD_TARGET}/{mission_id}/{mission_id}-result.zip"
+
+        return {"download-link": url, "request-status": "success", "Message": "request good"}, 200
+    except Exception:
+        return {"request-status": "fail", "Message": "downloadlink generate failed"}, 200
 
 
 if __name__ == '__main__':
