@@ -80,7 +80,12 @@ pushback:
 updatebackendimage: updatecredential buildback pushback
 
 
+# useful for front end --platform linux/amd64
+buildfront:
+	@docker build --no-cache -t pdf-frontend -f ../infra/dockerfile-frontend ../front/pdf-slicer-ui
 
+buildfront-express:
+	@docker build --no-cache -t pdf-frontend-express -f ../infra/dockerfile-frontend-express ../front/frontend-server
 
 
 
