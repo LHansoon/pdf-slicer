@@ -61,9 +61,7 @@ def post_request():
     for file in file_list:
         if file not in uploaded_list:
             app.logger.info(f"{mission_id} - failed, list not matching")
-            response = Flask.jsonify({"request-status": "fail", "Message": "file list not matching uploaded files"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            return response, 200
+            return {"request-status": "fail", "Message": "file list not matching uploaded files"}, 200
 
     s3_bkt = session.resource("s3").Bucket(S3_BKT)
     for file in file_list:
@@ -84,9 +82,7 @@ def post_request():
         MessageBody=json.dumps(json_request)
     )
     app.logger.info(f"{mission_id} - sqs mission created")
-    response = Flask.jsonify({"request-status": "success", "Message": "request good"})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response, 200
+    return {"request-status": "success", "Message": "request good"}, 200
 
 
 def generate_mission_id():

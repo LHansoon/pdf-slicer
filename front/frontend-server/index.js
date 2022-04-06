@@ -24,7 +24,16 @@ let mission_id = '';
 //get mission id by sending the request to the flask backend server
 app.get('/getmissionid',function (req, res){
     // send to flask server to get the mission id back
-    request('http://localhost:8000/getmissionid',function (error,response){
+    var serverOptions = {
+        uri: `http://flask:8000/getmissionid`,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+
+    request(serverOptions,function (error,response){
+        console.log(response)
         res.json({missionID: JSON.parse(response.body)['mission-id']});
     });
 });
@@ -92,9 +101,16 @@ app.post('/split_save',function (req, res){
 
 //post request to flask backend server
 app.post('/postrequest',function (req, res){
-    // send to flask server to get the mission id back
-    request('http://localhost:8000/postrequest',function (error,response){
-        res.json({status: JSON.parse(response.body)['request-status']});
+
+    var server_post_Options = {
+        uri: `http://${process.env.VUE_APP_flask_host}/postrequest`,
+        method: 'POST',
+        json: req.body
+    }
+    request(server_post_Options,function (error,response){
+        console.log(response.body)
+        console.log(typeof response.body)
+        res.json({status: response.body['request-status']});
     });
 });
 app.post('/debug',function (req,res){

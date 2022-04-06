@@ -70,7 +70,7 @@ buildworkerenv:
 # useful for backend
 
 buildback:
-	@docker build --no-cache --platform linux/amd64 -t pdf-backend -f ../infra/dockerfile-backend ../backend/
+	@docker build --no-cache -t pdf-backend -f ../infra/dockerfile-backend ../backend/
 
 pushback:
 	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com

@@ -377,7 +377,7 @@ export default {
     createMission_Dir(mission_id) {
       axios({
         method: 'post',
-        url: `http://${process.env.VUE_APP_express_host}:3000/mkdir`,
+        url: `http://${process.env.VUE_APP_express_host}/mkdir`,
         data: {
           id: mission_id,
         },
@@ -385,9 +385,10 @@ export default {
     },
     // upload files by frontend server
     uploadFiles(formData) {
+      console.log(`http://${process.env.VUE_APP_express_host}/upload`);
       axios({
         method: 'post',
-        url: `http://${process.env.VUE_APP_express_host}:3000/upload`,
+        url: `http://${process.env.VUE_APP_express_host}/upload`,
         data: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -407,7 +408,7 @@ export default {
     // get Mission ID before mounting
     // eslint-disable-next-line camelcase,no-shadow
     getMissionID(json_template) {
-      const path = `http://${process.env.VUE_APP_express_host}:3000/getmissionid`;
+      const path = `http://${process.env.VUE_APP_express_host}/getmissionid`;
       axios.get(path)
         .then((res) => {
           // eslint-disable-next-line no-param-reassign
@@ -423,7 +424,7 @@ export default {
     deleteFile(fileName) {
       axios({
         method: 'post',
-        url: `http://${process.env.VUE_APP_express_host}:3000/delete`,
+        url: `http://${process.env.VUE_APP_express_host}/delete`,
         data: {
           deleteName: fileName,
         },
@@ -479,7 +480,7 @@ export default {
     saveSetting() {
       axios({
         method: 'post',
-        url: `http://${process.env.VUE_APP_express_host}:3000/merge_save`,
+        url: `http://${process.env.VUE_APP_express_host}/merge_save`,
         data: {
           taskInput: this.merge_split.merge_inputs,
         },
@@ -523,7 +524,7 @@ export default {
     saveSplitSetting() {
       axios({
         method: 'post',
-        url: `http://${process.env.VUE_APP_express_host}:3000/split_save`,
+        url: `http://${process.env.VUE_APP_express_host}/split_save`,
         data: {
           taskInput: this.merge_split.split_inputs,
         },
@@ -553,7 +554,7 @@ export default {
       this.$refs.processingModal.hide();
       json_template['mission-params']['mission-requester-email'] = this.email;
       json_template['mission-params']['mission-email-notification-requested'] = true;
-      const path = `http://${process.env.VUE_APP_express_host}:3000/postrequest`;
+      const path = `http://${process.env.VUE_APP_express_host}/postrequest`;
       axios.post(path, json_template).then((res) => {
         console.log(res);
       });

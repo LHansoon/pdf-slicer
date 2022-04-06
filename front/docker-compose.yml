@@ -14,6 +14,8 @@ services:
   express:
     image: pdf-frontend-express
     container_name: express
+    ports:
+      - 3000:3000
     volumes:
       - type: bind
         source: ./
