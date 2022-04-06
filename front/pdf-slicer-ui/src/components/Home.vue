@@ -564,6 +564,7 @@ export default {
     onStartProcessing(evt) {
       evt.preventDefault();
       this.$refs.processingModal.hide();
+      this.email.email_set = true;
       if (this.email.email_set === true) {
         json_template['mission-params']['mission-requester-email'] = this.email.email_addr;
       }
