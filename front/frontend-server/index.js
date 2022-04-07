@@ -23,7 +23,7 @@ let mission_id = '';
 let download_status = '';
 function wait_request(){
     const server_download_Options = {
-        uri: `http://${process.env.VUE_APP_flask_host}/getresult`,
+        uri: `http://${process.env.VUE_APP_flask_host}/getresult?mission-id=${mission_id}`,
         method: 'GET',
     };
     request(server_download_Options,function (error_wait,response_wait){
