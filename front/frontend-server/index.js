@@ -21,7 +21,7 @@ app.use(
 
 let mission_id = '';
 let download_status = '';
-function wait_request(){
+function wait_request(res, interval_obj){
     const server_download_Options = {
         uri: `http://${process.env.VUE_APP_flask_host}/getresult?mission-id=${mission_id}`,
         method: 'GET',
@@ -31,7 +31,28 @@ function wait_request(){
             console.log(error_wait);
         }
         else{
-            download_status = response_wait.body['mission-status'];
+            console.log(response_wait.body)
+            download_status = JSON.parse(response_wait.body)['mission-status'];
+            console.log(download_status)
+            if (download_status === 'finished') {
+                clearInterval(interval_obj);
+                const download_Options = {
+                    uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
+                    method: 'GET',
+                };
+                request(download_Options, function (error_download, response_download) {
+                    // determine whether to send request to obtain the downloaded link
+                    if (error_download) {
+                        console.log(error_download);
+                    }
+                    else if(response_download.body['request-status'] === 'success'){
+                        res.json({link:response_download.body['download-link'], download_status: 'Ready!'});
+                    }
+                    else{
+                        console.log(response_download.body['Message']);
+                    }
+                });
+            }
         }
     });
     return download_status;
@@ -130,26 +151,8 @@ app.post('/postrequest',function (req, res){
         else if(response.body['request-status'] === 'success') {
             // send another set of requests to keep asking whether the download is available
             // This will stop when the link is returned with status 'ready'
-            this.interval = setInterval(() => wait_request(), 5000);
-            if (download_status === 'finished') {
-                window.clearInterval(this.interval);
-                const download_Options = {
-                    uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
-                    method: 'GET',
-                };
-                request(download_Options, function (error_download, response_download) {
-                    // determine whether to send request to obtain the downloaded link
-                    if (error_download) {
-                        console.log(error_download);
-                    }
-                    else if(response_download.body['request-status'] === 'success'){
-                        res.json({link:response_download.body['download-link'], download_status: 'Ready!'});
-                    }
-                    else{
-                        console.log(response_download.body['Message']);
-                    }
-                });
-            }
+            this.interval = setInterval(() => wait_request(res, this.interval), 5000);
+
         }
         else{
             res.json({'internal error with request': 500});
