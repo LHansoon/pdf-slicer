@@ -45,8 +45,8 @@ function wait_request(res, interval_obj){
                     if (error_download) {
                         console.log(error_download);
                     }
-                    else if(response_download.body['request-status'] === 'success'){
-                        res.json({link:response_download.body['download-link'], download_status: 'Ready!'});
+                    else if(JSON.parse(response_download.body)['request-status'] === 'success'){
+                        res.json({link:JSON.parse(response_download.body)['download-link'], download_status: 'Ready!'});
                     }
                     else{
                         console.log(response_download.body['Message']);
