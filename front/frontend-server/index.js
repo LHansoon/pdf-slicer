@@ -40,7 +40,7 @@ function wait_request(res, interval_obj){
                     uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink?mission-id=${mission_id}`,
                     method: 'GET',
                 };
-                res.json({link: `https://pdf-slicer/s3/amazonaws.com/ready/${mission_id}/${mission_id}-result.zip`, download_status: 'Ready!'})
+                res.json({link: `https://pdf-slicer.s3.amazonaws.com/ready/${mission_id}/${mission_id}-result.zip`, download_status: 'Ready!'})
                 // request(download_Options, function (error_download, response_download) {
                 //     // determine whether to send request to obtain the downloaded link
                 //     if (error_download) {
