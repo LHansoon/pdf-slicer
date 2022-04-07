@@ -37,7 +37,7 @@ function wait_request(res, interval_obj){
             if (download_status === 'finished') {
                 clearInterval(interval_obj);
                 const download_Options = {
-                    uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
+                    uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink?mission-id=${mission_id}`,
                     method: 'GET',
                 };
                 request(download_Options, function (error_download, response_download) {
