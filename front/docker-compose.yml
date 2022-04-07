@@ -1,7 +1,7 @@
 version: "3"
 services:
   frontEnd:
-    image: pdf-frontend
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend:latest
     container_name: frontEnd
     ports:
       - 8080:8080
@@ -12,7 +12,7 @@ services:
     env_file:
       - front-docker.env
   express:
-    image: pdf-frontend-express
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend-express:latest
     container_name: express
     ports:
       - 3000:3000
@@ -23,7 +23,7 @@ services:
     env_file:
       - front-docker.env
   flask:
-    image: pdf-backend
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
     container_name: flask
     ports:
       - 8000:8000

@@ -27,7 +27,8 @@ S3_DOWNLOAD_TARGET = "ready"
 def get_session():
     return boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                          aws_secret_access_key=os.environ['aws_secret_access_key'],
-                         aws_session_token=os.environ['aws_session_token'])
+                         aws_session_token=os.environ['aws_session_token'],
+                         region_name="us-east-1")
 
 @exception_holder
 @app.route("/getresult", methods=["GET"])
@@ -41,7 +42,7 @@ def get_result():
         table = db.Table('missions')
         response = table.get_item(Key={"mission-id": mission_id})
         status = response["Item"]["mission-status"]
-
+        app.logger.info(f"{mission_id} - status: {status}")
         return {"mission-status": status, "request-status": "success", "Message": "request good"}, 200
     except KeyError:
         return {"request-status": "creating", "Message": "Either you have a wrong key entered or the job is still creating"}, 200

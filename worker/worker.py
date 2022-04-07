@@ -7,6 +7,7 @@ import json
 import shortuuid
 import datetime
 import time
+import shutil
 
 # this is pymupdf
 import fitz
@@ -113,17 +114,24 @@ class Mission(object):
                 logging_mission(self.mission_id, f"working on: {translated_file_name}")
 
                 target_file = open(translated_file_name, "a")
-                with fitz.Document(path) as original:
-                    i = 1
-                    for page in original:
-                        page_text = page.get_text()
-                        result = translate.translate_text(Text=page_text,
-                                                 SourceLanguageCode=source_language,
-                                                 TargetLanguageCode=target_language)
-                        target_file.write(f"===page {i}===\n")
-                        target_file.write(result["TranslatedText"])
-                        i += 1
-                target_file.close()
+                try:
+                    with fitz.Document(path) as original:
+                        i = 1
+                        for page in original:
+                            page_text = page.get_text()
+                            if page_text != "":
+                                result = translate.translate_text(Text=page_text,
+                                                         SourceLanguageCode=source_language,
+                                                         TargetLanguageCode=target_language)
+                            target_file.write(f"===page {i}===\n")
+                            target_file.write(result["TranslatedText"])
+                            i += 1
+                    target_file.close()
+                except Exception as e:
+                    params = {"page_text": page_text, "source_lang": source_language, "target_lang": target_language}
+                    params = str(params)
+                    logging_mission(self.mission_id, f"something went wrong here at thranslate\nparams: {params}")
+                    raise e
 
         logging_mission(self.mission_id, f"translation job finished")
 

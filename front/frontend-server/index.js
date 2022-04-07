@@ -31,7 +31,7 @@ function wait_request(){
             console.log(error_wait);
         }
         else{
-            download_status = response_wait.body['request-status'];
+            download_status = response_wait.body['mission-status'];
         }
     });
     return download_status;
@@ -131,8 +131,8 @@ app.post('/postrequest',function (req, res){
             // send another set of requests to keep asking whether the download is available
             // This will stop when the link is returned with status 'ready'
             this.interval = setInterval(() => wait_request(), 5000);
-            if (download_status === 'success') {
-                clearInterval(this.interval);
+            if (download_status === 'finished') {
+                window.clearInterval(this.interval);
                 const download_Options = {
                     uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink`,
                     method: 'GET',
