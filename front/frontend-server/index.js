@@ -40,18 +40,19 @@ function wait_request(res, interval_obj){
                     uri: `http://${process.env.VUE_APP_flask_host}/getdownloadlink?mission-id=${mission_id}`,
                     method: 'GET',
                 };
-                request(download_Options, function (error_download, response_download) {
-                    // determine whether to send request to obtain the downloaded link
-                    if (error_download) {
-                        console.log(error_download);
-                    }
-                    else if(JSON.parse(response_download.body)['request-status'] === 'success'){
-                        res.json({link:JSON.parse(response_download.body)['download-link'], download_status: 'Ready!'});
-                    }
-                    else{
-                        console.log(response_download.body['Message']);
-                    }
-                });
+                res.json({link: `https://pdf-slicer/s3/amazonaws.com/ready/${mission_id}/${mission_id}-result.zip`, download_status: 'Ready!'})
+                // request(download_Options, function (error_download, response_download) {
+                //     // determine whether to send request to obtain the downloaded link
+                //     if (error_download) {
+                //         console.log(error_download);
+                //     }
+                //     else if(JSON.parse(response_download.body)['request-status'] === 'success'){
+                //         res.json({link:response_download.body['download-link'], download_status: 'Ready!'});
+                //     }
+                //     else{
+                //         console.log(response_download.body['Message']);
+                //     }
+                // });
             }
         }
     });
