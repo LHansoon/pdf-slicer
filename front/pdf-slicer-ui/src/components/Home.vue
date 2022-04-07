@@ -577,9 +577,9 @@ export default {
       const path = `http://${process.env.VUE_APP_express_host}/postrequest`;
       this.download.loading = true;
       axios.post(path, json_template).then((res) => {
+        this.download.download_status = 'Ready!';
         if (res.data.download_status === 'Ready!') {
           this.download.loading = false;
-          this.download.download_status = 'Ready!';
           this.download.URL = res.data.link;
         }
       });
