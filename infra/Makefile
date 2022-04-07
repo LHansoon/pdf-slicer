@@ -67,22 +67,35 @@ buildworkerenv:
 	./build_worker_env.sh
 
 
-# useful for backend
+# useful for backend --platform linux/amd64
 
 buildback:
-	@docker build --no-cache --platform linux/amd64 -t pdf-backend -f ../infra/dockerfile-backend ../backend/
+	@docker build --no-cache -t pdf-backend -f ../infra/dockerfile-backend ../backend/
+	@docker tag pdf-backend 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
 
 pushback:
 	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com
-	@docker tag pdf-backend 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
 	@docker push 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
 
 updatebackendimage: updatecredential buildback pushback
 
 
+# useful for front end --platform linux/amd64
+buildfront:
+	@docker build --no-cache -t pdf-frontend -f ../infra/dockerfile-frontend ../front/pdf-slicer-ui
+	@docker tag pdf-frontend 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend:latest
 
+pushfront:
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com
+	@docker push 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend:latest
 
+buildfront-express:
+	@docker build --no-cache -t pdf-frontend-express -f ../infra/dockerfile-frontend-express ../front/frontend-server
+	@docker tag pdf-frontend-express 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend-express:latest
 
+pushfront-express:
+	@aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323940432787.dkr.ecr.us-east-1.amazonaws.com
+	@docker push 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend-express:latest
 
 updateall: updatecredential
 	(cd ../worker && ./update_env.sh)

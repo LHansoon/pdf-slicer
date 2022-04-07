@@ -1,0 +1,35 @@
+version: "3"
+services:
+  frontEnd:
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend:latest
+    container_name: frontEnd
+    ports:
+      - 8080:8080
+    volumes:
+      - type: bind
+        source: ./
+        target: /app/upload
+    env_file:
+      - front-docker.env
+  express:
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-frontend-express:latest
+    container_name: express
+    ports:
+      - 3000:3000
+    volumes:
+      - type: bind
+        source: ./
+        target: /usr/src/app/upload
+    env_file:
+      - front-docker.env
+  flask:
+    image: 323940432787.dkr.ecr.us-east-1.amazonaws.com/pdf-backend:latest
+    container_name: flask
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: ./
+        target: /work/upload
+    env_file:
+      - front-docker.env

@@ -7,19 +7,28 @@ import shortuuid
 import shutil
 
 from flask import Flask, request
+
 from decorators import exception_holder
+from flask_cors import CORS
 
 app = Flask(__name__)
+app.config.from_object(__name__)
+
+# enable CORS
+CORS(app, resources={r'/*': {'origins': '*'}}, supports_credentials=True)
 
 FILE_UPLOAD_LOC = "upload"
 S3_BKT = "pdf-slicer"
 S3_UPLOAD_TARGET = "source"
 
+S3_DOWNLOAD_TARGET = "ready"
+
 
 def get_session():
     return boto3.Session(aws_access_key_id=os.environ['aws_access_key_id'],
                          aws_secret_access_key=os.environ['aws_secret_access_key'],
-                         aws_session_token=os.environ['aws_session_token'])
+                         aws_session_token=os.environ['aws_session_token'],
+                         region_name="us-east-1")
 
 @exception_holder
 @app.route("/getresult", methods=["GET"])
@@ -33,7 +42,7 @@ def get_result():
         table = db.Table('missions')
         response = table.get_item(Key={"mission-id": mission_id})
         status = response["Item"]["mission-status"]
-
+        app.logger.info(f"{mission_id} - status: {status}")
         return {"mission-status": status, "request-status": "success", "Message": "request good"}, 200
     except KeyError:
         return {"request-status": "creating", "Message": "Either you have a wrong key entered or the job is still creating"}, 200
@@ -76,7 +85,6 @@ def post_request():
         MessageBody=json.dumps(json_request)
     )
     app.logger.info(f"{mission_id} - sqs mission created")
-
     return {"request-status": "success", "Message": "request good"}, 200
 
 
@@ -92,6 +100,20 @@ def generate_mission_id():
 def get_mission_id():
     mission_id = generate_mission_id()
     return {"mission-id": mission_id, "request-status": "success", "Message": "request good"}, 200
+
+@exception_holder
+@app.route("/getdownloadlink", methods=["GET"])
+def get_download_link():
+    request_args = request.args
+
+    try:
+        mission_id = request_args["mission-id"]
+
+        url = f"https://{S3_BKT}.s3.amazonaws.com/{S3_DOWNLOAD_TARGET}/{mission_id}/{mission_id}-result.zip"
+
+        return {"download-link": url, "request-status": "success", "Message": "request good"}, 200
+    except Exception:
+        return {"request-status": "fail", "Message": "downloadlink generate failed"}, 200
 
 
 if __name__ == '__main__':
