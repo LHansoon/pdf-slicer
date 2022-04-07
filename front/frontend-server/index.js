@@ -158,7 +158,6 @@ app.post('/postrequest',function (req, res){
         else{
             res.json({'internal error with request': 500});
         }
-        res.json({status: response.body['request-status']});
     });
 });
 app.post('/debug',function (req,res){
